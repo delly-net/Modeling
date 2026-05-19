@@ -7,10 +7,19 @@
       "Bash(git commit -m ' *)",
       "Bash(ls -la ~/.claude/skills/ 2>/dev/null || echo \"Skills directory not found\")",
       "Read(//d/Users/zhenglin/.claude/**)",
-      "Bash(mkdir -p ~/.claude/skills && ls -la ~/.claude/)"
+      "Bash(mkdir -p ~/.claude/skills && ls -la ~/.claude/)",
+      "Bash(mkdir -p \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme\")",
+      "Bash(chmod +x \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.sh\")",
+      "Bash(pwsh -File \".claude/skills/readme/skill.ps1\")",
+      "Bash(powershell.exe -File \".claude/skills/readme/skill.ps1\")",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/skills/readme/skill.ps1\")",
+      "Bash(python \".claude/skills/readme/skill.py\")",
+      "Bash(rm \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.ps1\" \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.sh\")"
     ],
     "additionalDirectories": [
-      "D:\\Users\\zhenglin\\.claude"
+      "D:\\Users\\zhenglin\\.claude",
+      "x:\\Project.Github\\delly-net\\Modeling\\.claude\\skills",
+      "x:\\Project.Github\\delly-net\\Modeling\\.claude\\skills\\readme"
     ]
   }
 }
