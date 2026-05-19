@@ -3,7 +3,14 @@
     "allow": [
       "Bash(dotnet build *)",
       "Bash(dotnet clean *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(ls -la ~/.claude/skills/ 2>/dev/null || echo \"Skills directory not found\")",
+      "Read(//d/Users/zhenglin/.claude/**)",
+      "Bash(mkdir -p ~/.claude/skills && ls -la ~/.claude/)"
+    ],
+    "additionalDirectories": [
+      "D:\\Users\\zhenglin\\.claude"
     ]
   }
 }

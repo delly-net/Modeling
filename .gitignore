@@ -359,3 +359,6 @@ coverage
 *.local
 .vscode/*
 Generated/
+
+# Claude Code
+*.local.json
