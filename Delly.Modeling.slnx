@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Delly.Modeling.Generator/Delly.Modeling.Generator.csproj" Id="2ee809b8-7997-4a5a-bcec-763f83f4a92b" />
+  <Project Path="Delly.Modeling/Delly.Modeling.csproj" />
+  <Project Path="Deme/Deme.csproj" Id="e76a71ac-556b-4865-a3ff-2b03bed207cf" />
+</Solution>

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<PublishAot>true</PublishAot>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+		<CompilerGeneratedFilesOutputPath>obj/Generated</CompilerGeneratedFilesOutputPath>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<JsonSerializerIsReflectionEnabled>false</JsonSerializerIsReflectionEnabled>
+		<TrimmerDefault>enabled</TrimmerDefault>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Delly.Modeling.Generator\Delly.Modeling.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\Delly.Modeling\Delly.Modeling.csproj" />
+	</ItemGroup>
+
+</Project>
