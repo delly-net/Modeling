@@ -1,10 +1,12 @@
 ﻿using Delly.Modeling;
+using Delly.Modeling.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Deme;
 
@@ -28,4 +30,11 @@ public partial class User(string id)
     /// 密码
     /// </summary>
     public string? Password { get; set; }
+
+    /// <summary>
+    /// 年龄
+    /// </summary>
+    public long Age { get; set; }
 }
+
+

@@ -7,29 +7,34 @@ namespace Delly.Modeling
     /// <summary>
     /// 模型对象接口，提供属性访问能力
     /// </summary>
-    /// <typeparam name="T">模型化的类型</typeparam>
-    public interface IModel<T>
+    public interface IModel
     {
         /// <summary>
-        /// 获取属性名称集合
+        /// 名称
         /// </summary>
-        /// <returns>属性名称数组</returns>
-        string[] GetProperties();
+        string Name { get; }
 
         /// <summary>
-        /// 获取属性值
+        /// 类型全名称
         /// </summary>
-        /// <param name="obj">目标对象</param>
-        /// <param name="name">属性名称</param>
-        /// <returns>属性值</returns>
-        object GetProperty(T obj, string name);
+        string Namespace { get; }
 
         /// <summary>
-        /// 设置属性值
+        /// 获取所有建模属性
         /// </summary>
-        /// <param name="obj">目标对象</param>
+        /// <returns>属性对象数组</returns>
+        IModelProperty[] GetProperties();
+
+        /// <summary>
+        /// 获取建模属性
+        /// </summary>
         /// <param name="name">属性名称</param>
-        /// <param name="value">属性值</param>
-        void SetProperty(T obj, string name, object value);
+        /// <returns>属性对象</returns>
+#if NETSTANDARD2_0
+        IModelProperty GetProperty(string name);
+#else
+        IModelProperty? GetProperty(string name);
+#endif
+
     }
 }

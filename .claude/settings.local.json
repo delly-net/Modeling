@@ -16,7 +16,12 @@
       "Bash(python \".claude/skills/readme/skill.py\")",
       "Bash(rm \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.ps1\" \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.sh\")",
       "Bash(mkdir -p .claude/skills)",
-      "Bash(python \".claude/skills/nuget/skill.py\")"
+      "Bash(python \".claude/skills/nuget/skill.py\")",
+      "Bash(dotnet restore *)",
+      "Bash(xxd)",
+      "Bash(csc -t:library /nologo /langversion:latest Delly.Modeling.Generator/ModelableSourceGenerator.cs)",
+      "Bash(cat /tmp/temp_gen.cs > Delly.Modeling.Generator/ModelableSourceGenerator.cs)",
+      "Read(//tmp/**)"
     ],
     "additionalDirectories": [
       "D:\\Users\\zhenglin\\.claude",

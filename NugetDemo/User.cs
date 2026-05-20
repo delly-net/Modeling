@@ -28,4 +28,10 @@ public partial class User(string id)
     /// 密码
     /// </summary>
     public string? Password { get; set; }
+
+    /// <summary>
+    /// 年龄
+    /// </summary>
+    public long Age { get; set; }
 }
+

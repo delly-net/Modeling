@@ -3,6 +3,8 @@ using Deme;
 
 var user = new User(Guid.NewGuid().ToString("N"));
 var model = User.GetModel();
-Console.WriteLine(model.GetProperty(user, nameof(User.Id)));
-model.SetProperty(user, nameof(User.Name), "model");
-Console.WriteLine(model.GetProperty(user, nameof(User.Name)));
+var propertyId = model.GetProperty(nameof(User.Id));
+var propertyName = model.GetProperty(nameof(User.Name));
+Console.WriteLine(propertyId?.GetValue(user));
+propertyName?.SetValue(user, "model");
+Console.WriteLine(propertyName?.GetValue(user));
