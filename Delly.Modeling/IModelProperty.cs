@@ -21,7 +21,7 @@ namespace Delly.Modeling
         /// <summary>
         /// 属性建模
         /// </summary>
-        IModel PropertyModel { get; }
+        IBaseModel PropertyModel { get; }
 
         /// <summary>
         /// 获取属性值

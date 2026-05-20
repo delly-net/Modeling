@@ -1,5 +1,5 @@
 ﻿using Delly.Modeling;
-using Deme;
+using Demo;
 
 var user = new User(Guid.NewGuid().ToString("N"));
 var model = User.GetModel();
@@ -8,3 +8,6 @@ var propertyName = model.GetProperty(nameof(User.Name));
 Console.WriteLine(propertyId?.GetValue(user));
 propertyName?.SetValue(user, "model");
 Console.WriteLine(propertyName?.GetValue(user));
+
+var userEntity = new UserEntity(Guid.NewGuid().ToString("N"));
+var entityModel = UserEntity.GetEntityModel();

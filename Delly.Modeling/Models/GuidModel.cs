@@ -7,7 +7,7 @@ namespace Delly.Modeling.Models
     /// <summary>
     /// Guid建模
     /// </summary>
-    public sealed class GuidModel : IModel
+    public sealed class GuidModel : IBaseModel
     {
         // 固定静态共享实例
         private static readonly GuidModel _instance = new GuidModel();
@@ -26,24 +26,5 @@ namespace Delly.Modeling.Models
         /// 命名空间
         /// </summary>
         public string Namespace => nameof(System);
-
-        /// <summary>
-        /// 属性集合
-        /// </summary>
-        /// <returns></returns>
-        public IModelProperty[] GetProperties()
-        {
-            return new IModelProperty[0];
-        }
-
-        /// <summary>
-        /// 获取建模属性
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public IModelProperty GetProperty(string name)
-        {
-            return null;
-        }
     }
 }

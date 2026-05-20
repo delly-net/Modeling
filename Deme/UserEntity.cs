@@ -15,27 +15,31 @@ namespace Demo;
 /// <summary>
 /// 用户
 /// </summary>
-[Modelable]
-public partial class User(string id)
+[ModelTable("user")]
+public partial class UserEntity(string id)
 {
     /// <summary>
     /// Id
     /// </summary>
+    [Description("Id")]
     public string Id { get; } = id;
 
     /// <summary>
     /// 名称
     /// </summary>
+    [Description("名称")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// 密码
     /// </summary>
+    [Description("密码")]
     public string? Password { get; set; }
 
     /// <summary>
     /// 年龄
     /// </summary>
+    [Description("年龄")]
     public long Age { get; set; }
 }
 

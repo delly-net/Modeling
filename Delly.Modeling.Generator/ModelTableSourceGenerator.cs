@@ -12,14 +12,14 @@ namespace Delly.Modeling.Generator;
 /// Modelable 特性源生成器
 /// </summary>
 [Generator]
-public class ModelableSourceGenerator : ISourceGenerator
+public class ModelTableSourceGenerator : ISourceGenerator
 {
     /// <summary>
     /// 初始化源生成器
     /// </summary>
     public void Initialize(GeneratorInitializationContext context)
     {
-        context.RegisterForSyntaxNotifications(() => new ModelableSyntaxReceiver());
+        context.RegisterForSyntaxNotifications(() => new ModelTableSyntaxReceiver());
     }
 
     /// <summary>
@@ -27,7 +27,7 @@ public class ModelableSourceGenerator : ISourceGenerator
     /// </summary>
     public void Execute(GeneratorExecutionContext context)
     {
-        if (context.SyntaxReceiver is not ModelableSyntaxReceiver receiver || receiver.Classes.Count == 0)
+        if (context.SyntaxReceiver is not ModelTableSyntaxReceiver receiver || receiver.Classes.Count == 0)
             return;
 
         foreach (var classDeclaration in receiver.Classes)
@@ -46,7 +46,7 @@ public class ModelableSourceGenerator : ISourceGenerator
             var properties = symbol.GetMembers().OfType<IPropertySymbol>().ToList();
 
             var source = GenerateSourceCode(namespaceName, className, properties);
-            var hintName = $"{className}.Model.g.cs";
+            var hintName = $"{className}.EntityModel.g.cs";
             context.AddSource(hintName, SourceText.From(source, Encoding.UTF8));
         }
     }
@@ -74,7 +74,7 @@ public class ModelableSourceGenerator : ISourceGenerator
         sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 获取模型");
         sb.AppendLine("    /// </summary>");
-        sb.AppendLine($"    public static mc__{className} GetModel() => mc__{className}.Instance;");
+        sb.AppendLine($"    public static emc__{className} GetEntityModel() => emc__{className}.Instance;");
         sb.AppendLine("}");
 
         // 为每个属性生成 p__ClassNameModel_PropertyName 类
@@ -84,8 +84,8 @@ public class ModelableSourceGenerator : ISourceGenerator
             sb.AppendLine("/// <summary>");
             sb.AppendLine("/// 自动模型");
             sb.AppendLine("/// </summary>");
-            var propertyClassName = $"mp__{className}_{property.Name}";
-            sb.AppendLine($"public class {propertyClassName} : IModelProperty");
+            var propertyClassName = $"emp__{className}_{property.Name}";
+            sb.AppendLine($"public class {propertyClassName} : IEntityModelProperty");
             sb.AppendLine("{");
             sb.AppendLine("    // 固定静态共享实例");
             sb.AppendLine($"    private static readonly {propertyClassName} _instance = new {propertyClassName}();");
@@ -99,6 +99,21 @@ public class ModelableSourceGenerator : ISourceGenerator
             sb.AppendLine("    /// 属性名称");
             sb.AppendLine("    /// </summary>");
             sb.AppendLine($"    public string Name => nameof({className}.{property.Name});");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 属性名称");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine($"    public string PropertyName => nameof({className}.{property.Name});");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 是否主键");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine($"    public bool IsPrimaryKey => false;");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 是否自增长");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine($"    public bool IsAutoIncrement => false;");
             sb.AppendLine();
             sb.AppendLine("    /// <summary>");
             sb.AppendLine("    /// 属性建模");
@@ -156,16 +171,16 @@ public class ModelableSourceGenerator : ISourceGenerator
         sb.AppendLine("/// <summary>");
         sb.AppendLine("/// 自动模型");
         sb.AppendLine("/// </summary>");
-        sb.AppendLine($"public class mc__{className} : IModel");
+        sb.AppendLine($"public class emc__{className} : IEntityModel");
         sb.AppendLine("{");
         sb.AppendLine();
         sb.AppendLine("    // 固定静态共享实例");
-        sb.AppendLine($"    private static readonly mc__{className} _instance = new mc__{className}();");
+        sb.AppendLine($"    private static readonly emc__{className} _instance = new emc__{className}();");
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 公共实例");
         sb.AppendLine("    /// </summary>");
-        sb.AppendLine($"    public static mc__{className} Instance => _instance;");
+        sb.AppendLine($"    public static emc__{className} Instance => _instance;");
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 名称");
@@ -173,20 +188,34 @@ public class ModelableSourceGenerator : ISourceGenerator
         sb.AppendLine($"    public string Name => \"{className}Model\";");
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 名称");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine($"    public string ClassName => \"{className}Model\";");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 命名空间");
         sb.AppendLine("    /// </summary>");
         sb.AppendLine($"    public string Namespace => \"{namespaceName}\";");
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
-        sb.AppendLine("    /// 获取集合");
+        sb.AppendLine("    /// 获取属性集合");
         sb.AppendLine("    /// </summary>");
         sb.AppendLine("    /// <returns></returns>");
-        sb.AppendLine("    public IModelProperty[] GetProperties()");
+        sb.AppendLine("    public IEntityModelProperty[] GetProperties()");
         sb.AppendLine("    {");
         sb.Append("        return [");
-        var propertyModelClasses = properties.Select(p => $"mp__{className}_{p.Name}.Instance");
+        var propertyModelClasses = properties.Select(p => $"emp__{className}_{p.Name}.Instance");
         sb.Append(string.Join(", ", propertyModelClasses));
         sb.AppendLine("];");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 获取索引集合");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <returns></returns>");
+        sb.AppendLine("    public EntityModelIndex[] GetIndexes()");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return [];");
         sb.AppendLine("    }");
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
@@ -194,14 +223,14 @@ public class ModelableSourceGenerator : ISourceGenerator
         sb.AppendLine("    /// </summary>");
         sb.AppendLine("    /// <param name=\"name\"></param>");
         sb.AppendLine("    /// <returns></returns>");
-        sb.AppendLine("    public IModelProperty? GetProperty(string name)");
+        sb.AppendLine("    public IEntityModelProperty? GetProperty(string name)");
         sb.AppendLine("    {");
         sb.AppendLine("        switch (name)");
         sb.AppendLine("        {");
         foreach (var property in properties)
         {
             sb.AppendLine($"            case nameof({className}.{property.Name}):");
-            sb.AppendLine($"                return mp__{className}_{property.Name}.Instance;");
+            sb.AppendLine($"                return emp__{className}_{property.Name}.Instance;");
         }
         sb.AppendLine("            default:");
         sb.AppendLine("                return null;");
