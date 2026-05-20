@@ -1,26 +1,26 @@
 ---
-name: git-commit
-description: Automatically stage changes and create a git commit with a generated message
+name: git
+description: 自动暂存更改并生成 git 提交消息
 ---
 
-# Git Auto Commit
+# Git 自动提交
 
-This skill automatically detects changes, stages them, and creates a git commit with an appropriate commit message.
+此技能自动检测更改、暂存文件，并使用合适的提交消息创建 git 提交。
 
-## Usage
+## 使用方法
 
 ```
-/git-commit
+/git
 ```
 
-## What it does
+## 功能
 
-1. Runs `git status` and `git diff` to analyze changes
-2. Runs `git log` to understand commit message style
-3. Generates a concise commit message summarizing changes
-4. Stages the changed files
-5. Creates the commit with the message
+1. 运行 `git status` 和 `git diff` 分析更改
+2. 运行 `git log` 了解提交消息风格
+3. 生成简洁的提交消息总结更改
+4. 暂存更改的文件
+5. 使用生成的消息创建提交
 
-## Output
+## 输出
 
-Returns the commit hash and summary of what was committed.
+返回提交哈希和提交内容摘要。

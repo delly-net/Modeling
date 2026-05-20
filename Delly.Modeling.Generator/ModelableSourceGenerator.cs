@@ -9,14 +9,25 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Delly.Modeling.Generator;
 
+/// <summary>
+/// Modelable 源代码生成器，为标记了 Modelable 特性的类生成模型访问代码
+/// </summary>
 [Generator]
 public class ModelableSourceGenerator : ISourceGenerator
 {
+    /// <summary>
+    /// 初始化生成器
+    /// </summary>
+    /// <param name="context">生成器初始化上下文</param>
     public void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForSyntaxNotifications(() => new ModelableSyntaxReceiver());
     }
 
+    /// <summary>
+    /// 执行源代码生成
+    /// </summary>
+    /// <param name="context">生成器执行上下文</param>
     public void Execute(GeneratorExecutionContext context)
     {
         if (context.SyntaxReceiver is not ModelableSyntaxReceiver receiver || receiver.Classes.Count == 0)
@@ -24,6 +35,7 @@ public class ModelableSourceGenerator : ISourceGenerator
 
         foreach (var classDeclaration in receiver.Classes)
         {
+            // 跳过生成的文件
             if (classDeclaration.SyntaxTree.FilePath.Contains("obj/"))
                 continue;
 
@@ -43,6 +55,7 @@ public class ModelableSourceGenerator : ISourceGenerator
         }
     }
 
+    // 生成源代码字符串
     private static string GenerateSourceCode(string namespaceName, string className, List<IPropertySymbol> properties)
     {
         var sb = new StringBuilder();
@@ -125,7 +138,7 @@ public class ModelableSourceGenerator : ISourceGenerator
         sb.AppendLine($"    /// <param name=\"{char.ToLower(className[0])}{className.Substring(1)}\"></param>");
         sb.AppendLine("    /// <param name=\"name\"></param>");
         sb.AppendLine("    /// <param name=\"value\"></param>");
-        sb.AppendLine($"    public void SetProperty({className} {char.ToLower(className[0])}{className.Substring(1)}, string name, object? value)");
+        sb.AppendLine($"    public void SetProperty({className} {char.ToLower(className[0])}{className.Substring(1)}, string name, object value)");
         sb.AppendLine("    {");
         sb.AppendLine("        switch (name)");
         sb.AppendLine("        {");

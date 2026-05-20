@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-README Generator Skill
-Generates README files in English and Chinese for the project and each subproject
+README 生成器技能
+为项目和每个子项目生成中英文 README 文件
 """
 
 import os
@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Tuple
 
 def get_project_structure(root_path: Path) -> List[Dict[str, Any]]:
-    """Find all projects in the solution."""
+    """查找解决方案中的所有项目。"""
     projects = []
     for item in root_path.iterdir():
         if not item.is_dir() or item.name.startswith('.') or item.name in ['bin', 'obj']:
@@ -32,7 +32,7 @@ def get_project_structure(root_path: Path) -> List[Dict[str, Any]]:
 
 
 def parse_csproj(csproj_path: Path) -> Dict[str, Any]:
-    """Parse .csproj file for metadata."""
+    """解析 .csproj 文件获取元数据。"""
     content = csproj_path.read_text(encoding='utf-8')
     result = {
         'target_framework': '',
@@ -42,12 +42,12 @@ def parse_csproj(csproj_path: Path) -> Dict[str, Any]:
         'project_references': []
     }
 
-    # Target framework
+    # 目标框架
     tf_match = re.search(r'<TargetFramework>([^<]+)</TargetFramework>', content)
     if tf_match:
         result['target_framework'] = tf_match.group(1)
 
-    # Output type
+    # 输出类型
     if '<OutputType>Exe</OutputType>' in content:
         result['is_library'] = False
 
@@ -55,12 +55,12 @@ def parse_csproj(csproj_path: Path) -> Dict[str, Any]:
     if '<PublishAot>true</PublishAot>' in content:
         result['is_aot_enabled'] = True
 
-    # Package references
+    # 包引用
     pkg_matches = re.findall(r'<PackageReference Include="([^"]+)" Version="([^"]+)"', content)
     for pkg, ver in pkg_matches:
         result['package_references'].append({'package': pkg, 'version': ver})
 
-    # Project references
+    # 项目引用
     proj_matches = re.findall(r'<ProjectReference Include="([^"]+)"', content)
     result['project_references'] = proj_matches
 
@@ -68,7 +68,7 @@ def parse_csproj(csproj_path: Path) -> Dict[str, Any]:
 
 
 def generate_root_readme(root_path: Path, projects: List[Dict[str, Any]]) -> Tuple[Path, Path]:
-    """Generate README files for the root directory."""
+    """为根目录生成 README 文件。"""
     readme_en = root_path / 'README.md'
     readme_zh = root_path / 'README.zh-CN.md'
 
@@ -141,7 +141,7 @@ dotnet run
 
 
 def generate_project_readme(project: Dict[str, Any], csproj_info: Dict[str, Any]) -> Tuple[Path, Path]:
-    """Generate README files for a specific project."""
+    """为特定项目生成 README 文件。"""
     name = project['name']
     target = csproj_info['target_framework']
     ptype = 'Library' if csproj_info['is_library'] else 'Application'
@@ -149,7 +149,7 @@ def generate_project_readme(project: Dict[str, Any], csproj_info: Dict[str, Any]
     readme_en = project['path'] / 'README.md'
     readme_zh = project['path'] / 'README.zh-CN.md'
 
-    # File descriptions
+    # 文件描述
     descriptions_en = {
         'ModelableAttribute.cs': 'Attribute to mark classes for modeling',
         'IModel.cs': 'Model interface definition',
@@ -168,10 +168,10 @@ def generate_project_readme(project: Dict[str, Any], csproj_info: Dict[str, Any]
         'User.cs': '示例模型类',
     }
 
-    # Sort files
+    # 排序文件
     files = sorted([f.name for f in project['files']])
 
-    # Build English README
+    # 构建英文 README
     en_lines = [
         f'# {name}',
         '',
@@ -199,7 +199,7 @@ def generate_project_readme(project: Dict[str, Any], csproj_info: Dict[str, Any]
         for ref in csproj_info['project_references']:
             en_lines.append(f'- {ref}')
 
-    # Build Chinese README
+    # 构建中文 README
     zh_lines = [
         f'# {name}',
         '',
@@ -234,38 +234,38 @@ def generate_project_readme(project: Dict[str, Any], csproj_info: Dict[str, Any]
 
 
 def main():
-    """Main execution."""
+    """主执行函数。"""
     script_dir = Path(__file__).parent
     project_root = script_dir.parent.parent.parent
 
-    print('Scanning project structure...')
+    print('扫描项目结构...')
     projects = get_project_structure(project_root)
 
-    print(f'Found {len(projects)} projects:')
+    print(f'找到 {len(projects)} 个项目:')
     for p in projects:
         print(f'  - {p["name"]}')
 
     generated_files = []
 
-    print('\nGenerating root README files...')
+    print('\n生成根目录 README 文件...')
     root_files = generate_root_readme(project_root, projects)
     generated_files.extend(root_files)
 
-    print('\nGenerating project README files...')
+    print('\n生成项目 README 文件...')
     for p in projects:
-        print(f'  Processing {p["name"]}...')
+        print(f'  处理 {p["name"]}...')
         csproj_info = parse_csproj(p['csproj'])
         proj_files = generate_project_readme(p, csproj_info)
         generated_files.extend(proj_files)
 
-    # Output summary
-    print('\n=== Summary ===')
-    print(f'Generated {len(generated_files)} README files:')
+    # 输出摘要
+    print('\n=== 摘要 ===')
+    print(f'已生成 {len(generated_files)} 个 README 文件:')
     for f in generated_files:
         relative = f.relative_to(project_root)
         print(f'  [OK] {relative}')
 
-    # Return JSON result
+    # 返回 JSON 结果
     result = {
         'generatedFiles': [str(f.relative_to(project_root)) for f in generated_files],
         'totalFiles': len(generated_files)

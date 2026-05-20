@@ -1,23 +1,28 @@
-# README Generator
+---
+name: readme
+description: 扫描整个项目目录并生成中英文 README 文件
+---
 
-This skill automatically scans the entire project directory and generates comprehensive README files in both English and Chinese.
+# README 生成器
 
-## Usage
+此技能自动扫描整个项目目录，为项目根目录和每个子项目生成中英文 README 文件。
+
+## 使用方法
 
 ```
 /readme
 ```
 
-## What it does
+## 功能
 
-1. Scans the project structure to identify all `.csproj` projects
-2. Analyzes source files, project configurations, and dependencies
-3. Generates `README.md` (English) and `README.zh-CN.md` (Chinese) for the root directory
-4. Creates individual README files for each project subdirectory:
-   - `Delly.Modeling/README.md` and `Delly.Modeling/README.zh-CN.md`
-   - `Delly.Modeling.Generator/README.md` and `Delly.Modeling.Generator/README.zh-CN.md`
-   - `Deme/README.md` and `Deme/README.zh-CN.md`
+1. 扫描项目结构以识别所有 `.csproj` 项目
+2. 分析源文件、项目配置和依赖项
+3. 为根目录生成 `README.md`（英文）和 `README.zh-CN.md`（中文）
+4. 为每个项目子目录创建单独的 README 文件：
+   - `Delly.Modeling/README.md` 和 `Delly.Modeling/README.zh-CN.md`
+   - `Delly.Modeling.Generator/README.md` 和 `Delly.Modeling.Generator/README.zh-CN.md`
+   - `Deme/README.md` 和 `Deme/README.zh-CN.md`
 
-## Output
+## 输出
 
-Returns a summary of all generated README files with their paths.
+返回所有生成的 README 文件摘要及其路径。
