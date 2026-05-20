@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-    <Description>Roslyn Source Generator for compile-time code generation. Eliminates runtime reflection overhead with compile-time generation. Supports netstandard2.0 and is AOT-compatible.</Description>
-    <PackageTags>analyzer code-generation compiler csharp dotnet dotnet-standard dynamic modeling netstandard property-access reflection roslyn roslyn-analyzer source-generator</PackageTags>
+		<Description>Roslyn Source Generator for compile-time code generation. Eliminates runtime reflection overhead with compile-time generation. Supports netstandard2.0 and is AOT-compatible.</Description>
+		<PackageTags>analyzer code-generation compiler csharp dotnet dotnet-standard dynamic modeling netstandard property-access reflection roslyn roslyn-analyzer source-generator</PackageTags>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
@@ -16,6 +16,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<IsRoslynComponent>true</IsRoslynComponent>
 		<IsPackable>true</IsPackable>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
 	<ItemGroup>
