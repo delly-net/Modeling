@@ -7,6 +7,7 @@
 - **[Delly.Modeling](./Delly.Modeling/)** - 核心建模库 (.NET Standard 2.0)
 - **[Delly.Modeling.Generator](./Delly.Modeling.Generator/)** - Roslyn 源代码生成器
 - **[Deme](./Deme/)** - 演示应用程序
+- **[NugetDemo](./NugetDemo/)** - NuGet 包演示
 
 ## 快速开始
 

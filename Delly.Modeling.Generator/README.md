@@ -17,7 +17,3 @@
 |---------|---------|
 | Microsoft.CodeAnalysis.CSharp | 4.12.0 |
 | Microsoft.CodeAnalysis.Analyzers | 3.3.4 |
-
-## Project References
-
-- ..\Delly.Modeling\Delly.Modeling.csproj

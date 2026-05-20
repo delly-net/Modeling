@@ -7,6 +7,7 @@ A .NET modeling library that provides source code generation capabilities for ob
 - **[Delly.Modeling](./Delly.Modeling/)** - Core modeling library (.NET Standard 2.0)
 - **[Delly.Modeling.Generator](./Delly.Modeling.Generator/)** - Roslyn Source Generator
 - **[Deme](./Deme/)** - Demonstration application
+- **[NugetDemo](./NugetDemo/)** - NuGet package demo
 
 ## Quick Start
 
