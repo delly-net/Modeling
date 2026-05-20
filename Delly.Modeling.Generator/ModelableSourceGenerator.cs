@@ -81,9 +81,6 @@ public class ModelableSourceGenerator : ISourceGenerator
         foreach (var property in properties)
         {
             sb.AppendLine();
-            sb.AppendLine("/// <summary>");
-            sb.AppendLine("/// 自动模型");
-            sb.AppendLine("/// </summary>");
             var propertyClassName = $"mp__{className}_{property.Name}";
             sb.AppendLine($"public class {propertyClassName} : IModelProperty");
             sb.AppendLine("{");
@@ -153,9 +150,6 @@ public class ModelableSourceGenerator : ISourceGenerator
 
         // 生成主模型类 c__ClassNameModel
         sb.AppendLine();
-        sb.AppendLine("/// <summary>");
-        sb.AppendLine("/// 自动模型");
-        sb.AppendLine("/// </summary>");
         sb.AppendLine($"public class mc__{className} : IModel");
         sb.AppendLine("{");
         sb.AppendLine();

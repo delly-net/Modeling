@@ -35,10 +35,10 @@ public class ModelTableSyntaxReceiver : ISyntaxReceiver
             foreach (var attribute in attributeList.Attributes)
             {
                 var attributeName = attribute.Name.ToString();
-                if (attributeName == "ModelTable" ||
-                    attributeName == "ModelTableAttribute" ||
-                    attributeName.EndsWith(".ModelTable") ||
-                    attributeName.EndsWith(".ModelTableAttribute"))
+                if (attributeName == "MoTable" ||
+                    attributeName == "MoTableAttribute" ||
+                    attributeName.EndsWith(".MoTable") ||
+                    attributeName.EndsWith(".MoTableAttribute"))
                 {
                     return true;
                 }

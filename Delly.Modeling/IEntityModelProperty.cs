@@ -31,5 +31,25 @@ namespace Delly.Modeling
         /// </summary>
         bool IsAutoIncrement { get; }
 
+        /// <summary>
+        /// 类型
+        /// </summary>
+        ColumnType Type { get; }
+
+        /// <summary>
+        /// 长度
+        /// </summary>
+        int Length { get; }
+
+        /// <summary>
+        /// 精度
+        /// </summary>
+        int Precision { get; }
+
+        /// <summary>
+        /// 注释
+        /// </summary>
+        string Comment { get; }
+
     }
 }
