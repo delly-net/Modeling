@@ -14,12 +14,15 @@
       "Bash(powershell.exe -File \".claude/skills/readme/skill.ps1\")",
       "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/skills/readme/skill.ps1\")",
       "Bash(python \".claude/skills/readme/skill.py\")",
-      "Bash(rm \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.ps1\" \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.sh\")"
+      "Bash(rm \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.ps1\" \"x:/Project.Github/delly-net/Modeling/.claude/skills/readme/skill.sh\")",
+      "Bash(mkdir -p .claude/skills)",
+      "Bash(python \".claude/skills/nuget/skill.py\")"
     ],
     "additionalDirectories": [
       "D:\\Users\\zhenglin\\.claude",
       "x:\\Project.Github\\delly-net\\Modeling\\.claude\\skills",
-      "x:\\Project.Github\\delly-net\\Modeling\\.claude\\skills\\readme"
+      "x:\\Project.Github\\delly-net\\Modeling\\.claude\\skills\\readme",
+      "X:\\Project.Github\\delly-net\\Modeling\\.claude\\skills"
     ]
   }
 }
