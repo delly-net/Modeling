@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Delly.Modeling.Generator;
 
 /// <summary>
-/// ModelTable 特性语法接收器，收集带有 ModelTable 特性的类声明
+/// ModelTable 特性语法接收器，收集带有 ModelTable 或 ModelQuery 特性的类声明
 /// </summary>
 public class ModelTableSyntaxReceiver : ISyntaxReceiver
 {
@@ -27,7 +27,7 @@ public class ModelTableSyntaxReceiver : ISyntaxReceiver
         }
     }
 
-    // 检查类是否具有 Modelable 特性
+    // 检查类是否具有 Modelable 或 ModelQuery 特性
     private static bool HasModelableAttribute(ClassDeclarationSyntax classDeclaration)
     {
         foreach (var attributeList in classDeclaration.AttributeLists)
@@ -38,7 +38,11 @@ public class ModelTableSyntaxReceiver : ISyntaxReceiver
                 if (attributeName == "MoTable" ||
                     attributeName == "MoTableAttribute" ||
                     attributeName.EndsWith(".MoTable") ||
-                    attributeName.EndsWith(".MoTableAttribute"))
+                    attributeName.EndsWith(".MoTableAttribute") ||
+                    attributeName == "MoQuery" ||
+                    attributeName == "MoQueryAttribute" ||
+                    attributeName.EndsWith(".MoQuery") ||
+                    attributeName.EndsWith(".MoQueryAttribute"))
                 {
                     return true;
                 }

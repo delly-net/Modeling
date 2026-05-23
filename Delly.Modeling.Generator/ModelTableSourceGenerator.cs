@@ -46,15 +46,21 @@ public class ModelTableSourceGenerator : ISourceGenerator
             var namespaceName = namespaceSymbol.IsGlobalNamespace ? "" : namespaceSymbol.ToString();
             var className = symbol.Name;
 
-            // 读取 [MoTable] 特性的 Name
-            var tableName = GetTableName(symbol) ?? className;
+            // 特性互斥检测
+            if (!CheckAttributeMutualExclusion(symbol, context))
+                continue;
 
-            // 读取属性元数据（只包含有 [MoColumn] 特性的属性）
+            var isQuery = IsMoQuery(symbol);
+
+            // 读取 [MoTable] 特性的 Name，MoQuery 使用类名
+            var tableName = isQuery ? className : (GetTableName(symbol) ?? className);
+
+            // 读取属性元数据（MoTable 只包含有 [MoColumn] 的属性，MoQuery 包含所有属性）
             var propertyMetadatas = new List<PropertyMetadata>();
 
             foreach (var prop in symbol.GetMembers().OfType<IPropertySymbol>())
             {
-                var meta = GetPropertyMetadata(prop);
+                var meta = GetPropertyMetadata(prop, isQuery);
                 if (meta == null)
                     continue;
 
@@ -383,11 +389,113 @@ public class ModelTableSourceGenerator : ISourceGenerator
     }
 
     /// <summary>
-    /// 读取属性元数据（检查 [MoColumn]、[MoColumnIndex] 特性）
-    /// 返回 null 表示该属性没有 [MoColumn] 特性，不参与源生成
+    /// 检查类是否标记为查询对象
     /// </summary>
-    private static PropertyMetadata? GetPropertyMetadata(IPropertySymbol property)
+    private static bool IsMoQuery(INamedTypeSymbol symbol)
     {
+        return symbol.GetAttributes().Any(a =>
+            a.AttributeClass?.Name == "MoQueryAttribute");
+    }
+
+    /// <summary>
+    /// 检查特性互斥
+    /// </summary>
+    private static bool CheckAttributeMutualExclusion(INamedTypeSymbol symbol, GeneratorExecutionContext context)
+    {
+        var hasMoTable = symbol.GetAttributes().Any(a => a.AttributeClass?.Name == "MoTableAttribute");
+        var hasMoQuery = symbol.GetAttributes().Any(a => a.AttributeClass?.Name == "MoQueryAttribute");
+
+        if (hasMoTable && hasMoQuery)
+        {
+            var diagnostic = Diagnostic.Create(
+                new DiagnosticDescriptor(
+                    "DM001",
+                    "Attribute Mutually Exclusive",
+                    "Class '{0}' cannot have both [MoTable] and [MoQuery] attributes. They are mutually exclusive.",
+                    "Usage",
+                    DiagnosticSeverity.Error,
+                    true),
+                symbol.Locations.FirstOrDefault(),
+                symbol.Name);
+            context.ReportDiagnostic(diagnostic);
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// 推断属性类型
+    /// </summary>
+    private static int InferColumnType(ITypeSymbol type)
+    {
+        var unwrappedType = UnwrapNullableType(type);
+        var fullTypeName = unwrappedType.ToString();
+        return fullTypeName switch
+        {
+            "string" or "System.String" => 0x0300,
+            "int" or "System.Int32" => 0x0102,
+            "long" or "System.Int64" => 0x0103,
+            "bool" or "System.Boolean" => 0x0101,
+            "double" or "System.Double" => 0x0100,
+            "decimal" or "System.Decimal" => 0x0100,
+            "System.DateTime" => 0x0200,
+            "System.Guid" => 0,
+            _ => 0x0300
+        };
+    }
+
+    /// <summary>
+    /// 获取类型的默认长度
+    /// </summary>
+    private static int GetDefaultLength(ITypeSymbol type)
+    {
+        var unwrappedType = UnwrapNullableType(type);
+        var fullTypeName = unwrappedType.ToString();
+        return fullTypeName switch
+        {
+            "string" or "System.String" => 255,
+            _ => 0
+        };
+    }
+
+    /// <summary>
+    /// 解包可空类型
+    /// </summary>
+    private static ITypeSymbol UnwrapNullableType(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol namedType && namedType.IsGenericType &&
+            namedType.ConstructedFrom?.Name == "Nullable")
+        {
+            return namedType.TypeArguments[0];
+        }
+        return type;
+    }
+
+    /// <summary>
+    /// 读取属性元数据（检查 [MoColumn]、[MoColumnIndex] 特性）
+    /// 返回 null 表示该属性不参与源生成（MoTable 无 [MoColumn]）
+    /// </summary>
+    private static PropertyMetadata? GetPropertyMetadata(IPropertySymbol property, bool isQuery)
+    {
+        if (isQuery)
+        {
+            // 查询对象：不读取 [MoColumn]，使用默认推断值
+            return new PropertyMetadata
+            {
+                Symbol = property,
+                ColumnName = property.Name,
+                IsPrimaryKey = false,
+                IsAutoIncrement = false,
+                Type = InferColumnType(property.Type),
+                Length = GetDefaultLength(property.Type),
+                Precision = 0,
+                Comment = string.Empty,
+                ColumnIndexes = new List<ColumnIndexEntry>()
+            };
+        }
+
+        // 实体表：读取 [MoColumn] 特性
         var moColumnAttr = property.GetAttributes().FirstOrDefault(a =>
             a.AttributeClass?.Name == "MoColumnAttribute");
 
