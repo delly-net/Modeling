@@ -9,7 +9,7 @@
 		<PackageIcon>model_128.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/delly-net/Modeling</RepositoryUrl>
-		<Version>2026.5.6</Version>
+		<Version>2026.5.7</Version>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>

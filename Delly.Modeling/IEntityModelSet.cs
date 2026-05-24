@@ -19,5 +19,24 @@ namespace Delly.Modeling
         /// 获取集合中的模型数量
         /// </summary>
         int Count { get; }
+
+        /// <summary>
+        /// 获取指定类型的模型
+        /// </summary>
+        /// <typeparam name="T">模型类型</typeparam>
+        /// <returns>指定类型的模型</returns>
+        /// <exception cref="System.NotSupportedException">当类型不匹配时抛出</exception>
+        IEntityModel GetModel<T>() where T : class;
+
+        /// <summary>
+        /// 尝试获取指定类型的模型
+        /// </summary>
+        /// <typeparam name="T">模型类型</typeparam>
+        /// <returns>模型对象，未找到时返回 null</returns>
+#if !NETSTANDARD2_0
+        IEntityModel? TryGetModel<T>() where T : class;
+#else
+        IEntityModel TryGetModel<T>() where T : class;
+#endif
     }
 }
