@@ -24,5 +24,12 @@ namespace Delly.Modeling
         /// </summary>
         string Namespace { get; }
 
+        /// <summary>
+        /// 创建模型类型的新实例
+        /// </summary>
+        /// <param name="args">构造函数参数数组</param>
+        /// <returns>模型类型的新实例</returns>
+        object CreateInstance(object[] args);
+
     }
 }

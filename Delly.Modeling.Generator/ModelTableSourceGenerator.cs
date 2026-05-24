@@ -90,13 +90,23 @@ public class ModelTableSourceGenerator : ISourceGenerator
                 .Select(kv => new IndexMetadata(kv.Key, kv.Value.Columns.ToArray(), kv.Value.IsUnique))
                 .ToList();
 
-            var source = GenerateSourceCode(namespaceName, className, tableName, propertyMetadatas, indexes);
+            // 收集所有构造函数信息
+            var constructors = new List<ConstructorInfo>();
+            foreach (var ctor in symbol.Constructors)
+            {
+                constructors.Add(new ConstructorInfo
+                {
+                    ParameterTypes = ctor.Parameters.Select(p => p.Type).ToList()
+                });
+            }
+
+            var source = GenerateSourceCode(namespaceName, className, tableName, propertyMetadatas, indexes, constructors);
             var hintName = $"{className}.EntityModel.g.cs";
             context.AddSource(hintName, SourceText.From(source, Encoding.UTF8));
         }
     }
 
-    private static string GenerateSourceCode(string namespaceName, string className, string tableName, List<PropertyMetadata> properties, List<IndexMetadata> indexes)
+    private static string GenerateSourceCode(string namespaceName, string className, string tableName, List<PropertyMetadata> properties, List<IndexMetadata> indexes, List<ConstructorInfo> constructors)
     {
         var sb = new StringBuilder();
 
@@ -316,6 +326,55 @@ public class ModelTableSourceGenerator : ISourceGenerator
         sb.AppendLine("                return null;");
         sb.AppendLine("        }");
         sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 创建模型类型的新实例");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <param name=\"args\">构造函数参数数组</param>");
+        sb.AppendLine("    /// <returns>模型类型的新实例</returns>");
+        sb.AppendLine("    public object CreateInstance(object[] args)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        if (args == null) args = new object[0];");
+
+        // 检查是否有参数数量相同的构造函数
+        var paramCounts = constructors.Select(c => c.ParameterTypes.Count).ToList();
+        var hasDuplicate = paramCounts.GroupBy(x => x).Any(g => g.Count() > 1);
+
+        if (hasDuplicate)
+        {
+            sb.AppendLine("        throw new NotSupportedException(\"Multiple constructors with the same parameter count are not supported.\");");
+        }
+        else
+        {
+            sb.AppendLine($"        var paramCount = args.Length;");
+            sb.AppendLine("        switch (paramCount)");
+            sb.AppendLine("        {");
+            foreach (var ctor in constructors)
+            {
+                var paramTypes = ctor.ParameterTypes;
+                var paramCount = paramTypes.Count;
+                sb.AppendLine($"            case {paramCount}:");
+                if (paramCount > 0)
+                {
+                    var typeCastArgs = new List<string>();
+                    for (int i = 0; i < paramCount; i++)
+                    {
+                        var paramType = paramTypes[i];
+                        var castExpr = GetTypeCastExpression(paramType, $"args[{i}]");
+                        typeCastArgs.Add(castExpr);
+                    }
+                    sb.AppendLine($"                return new {className}({string.Join(", ", typeCastArgs)});");
+                }
+                else
+                {
+                    sb.AppendLine($"                return new {className}();");
+                }
+            }
+            sb.AppendLine("            default:");
+            sb.AppendLine($"                throw new ArgumentException($\"No constructor found with {{paramCount}} parameters.\");");
+            sb.AppendLine("        }");
+        }
+        sb.AppendLine("    }");
         sb.AppendLine("}");
 
         return sb.ToString();
@@ -351,7 +410,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
     /// <summary>
     /// 获取类型转换表达式
     /// </summary>
-    private static string GetConversionExpression(ITypeSymbol type, string valueExpr)
+    private static string GetTypeCastExpression(ITypeSymbol type, string argExpr)
     {
         if (type is INamedTypeSymbol namedType && namedType.IsGenericType &&
             namedType.ConstructedFrom?.Name == "Nullable")
@@ -363,15 +422,15 @@ public class ModelTableSourceGenerator : ISourceGenerator
 
         return fullTypeName switch
         {
-            "string" or "System.String" => $"{valueExpr}?.ToString()",
-            "int" or "System.Int32" => $"Convert.ToInt32({valueExpr})",
-            "long" or "System.Int64" => $"Convert.ToInt64({valueExpr})",
-            "bool" or "System.Boolean" => $"Convert.ToBoolean({valueExpr})",
-            "double" or "System.Double" => $"Convert.ToDouble({valueExpr})",
-            "decimal" or "System.Decimal" => $"Convert.ToDecimal({valueExpr})",
-            "System.DateTime" => $"Convert.ToDateTime({valueExpr})",
-            "System.Guid" => $"{valueExpr} is Guid guid ? guid : Guid.Parse({valueExpr}?.ToString() ?? Guid.Empty.ToString())",
-            _ => $"{valueExpr}?.ToString()"
+            "string" or "System.String" => $"({argExpr} as string) ?? string.Empty",
+            "int" or "System.Int32" => $"Convert.ToInt32({argExpr})",
+            "long" or "System.Int64" => $"Convert.ToInt64({argExpr})",
+            "bool" or "System.Boolean" => $"Convert.ToBoolean({argExpr})",
+            "double" or "System.Double" => $"Convert.ToDouble({argExpr})",
+            "decimal" or "System.Decimal" => $"Convert.ToDecimal({argExpr})",
+            "System.DateTime" => $"Convert.ToDateTime({argExpr})",
+            "System.Guid" => $"{argExpr} is Guid guid ? guid : Guid.Parse({argExpr}?.ToString() ?? Guid.Empty.ToString())",
+            _ => $"({argExpr} as {fullTypeName})"
         };
     }
 
@@ -659,5 +718,32 @@ public class ModelTableSourceGenerator : ISourceGenerator
         public string Name { get; }
         public string[] Columns { get; }
         public bool IsUnique { get; }
+    }
+
+    /// <summary>
+    /// 获取类型转换表达式
+    /// </summary>
+    private static string GetConversionExpression(ITypeSymbol type, string valueExpr)
+    {
+        if (type is INamedTypeSymbol namedType && namedType.IsGenericType &&
+            namedType.ConstructedFrom?.Name == "Nullable")
+        {
+            type = namedType.TypeArguments[0];
+        }
+
+        var fullTypeName = type.ToString();
+
+        return fullTypeName switch
+        {
+            "string" or "System.String" => $"{valueExpr}?.ToString()",
+            "int" or "System.Int32" => $"Convert.ToInt32({valueExpr})",
+            "long" or "System.Int64" => $"Convert.ToInt64({valueExpr})",
+            "bool" or "System.Boolean" => $"Convert.ToBoolean({valueExpr})",
+            "double" or "System.Double" => $"Convert.ToDouble({valueExpr})",
+            "decimal" or "System.Decimal" => $"Convert.ToDecimal({valueExpr})",
+            "System.DateTime" => $"Convert.ToDateTime({valueExpr})",
+            "System.Guid" => $"{valueExpr} is Guid guid ? guid : Guid.Parse({valueExpr}?.ToString() ?? Guid.Empty.ToString())",
+            _ => $"{valueExpr}?.ToString()"
+        };
     }
 }
