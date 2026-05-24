@@ -69,5 +69,24 @@ namespace Delly.Modeling
         /// </summary>
         /// <param name="model">实体模型</param>
         void Add(IEntityModel model);
+
+        /// <summary>
+        /// 获取指定类型的实体模型
+        /// </summary>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <returns>指定类型的实体模型</returns>
+        /// <exception cref="System.NotSupportedException">当类型未在任何已注册集合中找到时抛出</exception>
+        IEntityModel GetModel<T>() where T : class;
+
+        /// <summary>
+        /// 尝试获取指定类型的实体模型
+        /// </summary>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <returns>指定类型的实体模型，未找到时返回 null</returns>
+#if NETSTANDARD2_0
+        IEntityModel TryGetModel<T>() where T : class;
+#else
+        IEntityModel? TryGetModel<T>() where T : class;
+#endif
     }
 }

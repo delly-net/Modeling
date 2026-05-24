@@ -2,6 +2,7 @@
 #nullable enable
 #endif
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +14,8 @@ namespace Delly.Modeling
     public sealed class DefaultEntityModelFactory : IEntityModelFactory
     {
         private readonly Dictionary<string, IEntityModel> _models;
+        private readonly List<IEntityModelSet> _modelSets;
+        private readonly HashSet<IEntityModelSet> _registeredSets;
 
         /// <summary>
         /// 初始化默认实体建模工厂
@@ -20,6 +23,8 @@ namespace Delly.Modeling
         public DefaultEntityModelFactory()
         {
             _models = new Dictionary<string, IEntityModel>();
+            _modelSets = new List<IEntityModelSet>();
+            _registeredSets = new HashSet<IEntityModelSet>();
         }
 
         /// <summary>
@@ -90,6 +95,10 @@ namespace Delly.Modeling
         /// <param name="modelSet">建模集合</param>
         public void AddSet(IEntityModelSet modelSet)
         {
+            if (_registeredSets.Add(modelSet))
+            {
+                _modelSets.Add(modelSet);
+            }
             var models = modelSet.GetModels();
             foreach (var model in models)
             {
@@ -106,6 +115,47 @@ namespace Delly.Modeling
         {
             var fullName = $"{model.Namespace}.{model.ClassName}";
             _models[fullName] = model;
+        }
+
+        /// <summary>
+        /// 获取指定类型的实体模型
+        /// </summary>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <returns>指定类型的实体模型</returns>
+        /// <exception cref="System.NotSupportedException">当类型未在任何已注册集合中找到时抛出</exception>
+        public IEntityModel GetModel<T>() where T : class
+        {
+            foreach (var set in _modelSets)
+            {
+                var model = set.TryGetModel<T>();
+                if (model != null)
+                {
+                    return model;
+                }
+            }
+            throw new NotSupportedException($"类型 {typeof(T).FullName} 未在已注册的建模集合中找到");
+        }
+
+        /// <summary>
+        /// 尝试获取指定类型的实体模型
+        /// </summary>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <returns>指定类型的实体模型，未找到时返回 null</returns>
+#if NETSTANDARD2_0
+        public IEntityModel TryGetModel<T>() where T : class
+#else
+        public IEntityModel? TryGetModel<T>() where T : class
+#endif
+        {
+            foreach (var set in _modelSets)
+            {
+                var model = set.TryGetModel<T>();
+                if (model != null)
+                {
+                    return model;
+                }
+            }
+            return null;
         }
     }
 }
