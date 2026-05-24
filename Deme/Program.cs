@@ -46,12 +46,6 @@ factory.Add(UserQuery.GetEntityModel());
 
 Console.WriteLine($"已注册模型总数: {factory.Count}");
 
-// 方式2：使用建模集合添加（需要先创建建模集合类）
-// [MoSet]
-// public partial class EntityModelSet;
-// var entitySet = new EntityModelSet();
-// factory.AddSet(entitySet);
-
 // 获取模型（通过类全称）
 var userEntityModel = factory.GetModel("Demo.UserEntity");
 if (userEntityModel != null)
@@ -85,30 +79,65 @@ foreach (var m in factory.GetModelsByNamespace("Demo"))
 Console.WriteLine($"\n是否存在 Demo.UserEntity: {factory.HasModel("Demo.UserEntity")}");
 Console.WriteLine($"是否存在 Demo.NotExist: {factory.HasModel("Demo.NotExist")}");
 
-// 模块化开发示例
+// ============================================
+// 建模集合示例
+// ============================================
+
 Console.WriteLine("\n============================================");
-Console.WriteLine("模块化开发示例");
+Console.WriteLine("建模集合泛型方法示例");
 Console.WriteLine("============================================\n");
 
-var moduleFactory = new DefaultEntityModelFactory();
+var entitySet = new EntityModelSet();
 
-// 模块A注册
-var moduleA = new ModuleA(moduleFactory);
-moduleA.RegisterModels();
+// 测试 GetModels（非泛型方法）
+Console.WriteLine($"GetModels() 返回模型数: {entitySet.GetModels().Count}");
+Console.WriteLine($"Count 属性: {entitySet.Count}");
 
-Console.WriteLine($"模块A注册后模型数: {moduleFactory.Count}");
-
-// 模块B注册
-var moduleB = new ModuleB(moduleFactory);
-moduleB.RegisterModels();
-
-Console.WriteLine($"模块B注册后模型数: {moduleFactory.Count}");
-
-Console.WriteLine("\n所有已注册模型:");
-foreach (var m in moduleFactory.GetAllModels())
+// 测试泛型方法
+var userEntityModel2 = entitySet.GetModel<UserEntity>();
+if (userEntityModel2 != null)
 {
-    Console.WriteLine($"  {ModelUtils.GetFullName(m)}");
+    Console.WriteLine($"GetModel<UserEntity> 成功: {userEntityModel2.ClassName}");
 }
+
+var userQueryModel2 = entitySet.GetModel<UserQuery>();
+if (userQueryModel2 != null)
+{
+    Console.WriteLine($"GetModel<UserQuery> 成功: {userQueryModel2.ClassName}");
+}
+
+// 测试 TryGetModel
+var userEntityModel3 = entitySet.TryGetModel<UserEntity>();
+if (userEntityModel3 != null)
+{
+    Console.WriteLine($"TryGetModel<UserEntity> 成功: {userEntityModel3.ClassName}");
+}
+
+var notExistModel = entitySet.TryGetModel<ModuleA>();
+if (notExistModel == null)
+{
+    Console.WriteLine("TryGetModel<ModuleA> 返回 null（符合预期）");
+}
+
+// 测试 GetModel 对不存在的类型抛出异常
+try
+{
+    entitySet.GetModel<ModuleA>();
+}
+catch (NotSupportedException ex)
+{
+    Console.WriteLine($"GetModel<ModuleA> 抛出 NotSupportedException: {ex.Message}");
+}
+
+// ============================================
+// 建模集合类定义
+// ============================================
+
+/// <summary>
+/// 实体模型集合
+/// </summary>
+[MoSet]
+public partial class EntityModelSet;
 
 // ============================================
 // 模块类定义（示例）

@@ -82,10 +82,25 @@ public class ModelSetSourceGenerator : ISourceGenerator
     {
         var sb = new StringBuilder();
 
+        sb.AppendLine("#if !NETSTANDARD2_0");
         sb.AppendLine("#nullable enable");
+        sb.AppendLine("#endif");
         sb.AppendLine();
         sb.AppendLine("using System;");
         sb.AppendLine("using Delly.Modeling;");
+
+        // 为有命名空间的模型类添加 using 指令
+        var uniqueNamespaces = modelClasses
+            .Where(m => !string.IsNullOrEmpty(m.Namespace))
+            .Select(m => m.Namespace)
+            .Distinct()
+            .ToList();
+
+        foreach (var ns in uniqueNamespaces)
+        {
+            sb.AppendLine($"using {ns};");
+        }
+
         sb.AppendLine();
 
         if (!string.IsNullOrEmpty(namespaceName))
@@ -97,6 +112,14 @@ public class ModelSetSourceGenerator : ISourceGenerator
         sb.AppendLine($"public partial class {className} : IEntityModelSet");
         sb.AppendLine("{");
         sb.AppendLine("    private static readonly IEntityModel[] _models;");
+
+        // 为每个模型类生成静态 Type 字段
+        foreach (var modelInfo in modelClasses)
+        {
+            var fieldName = GetFieldName(modelInfo.ClassName);
+            sb.AppendLine($"    private static readonly System.Type _{fieldName} = typeof({modelInfo.ClassName});");
+        }
+
         sb.AppendLine();
         sb.AppendLine("    static " + className + "()");
         sb.AppendLine("    {");
@@ -105,10 +128,7 @@ public class ModelSetSourceGenerator : ISourceGenerator
 
         foreach (var modelInfo in modelClasses)
         {
-            if (!string.IsNullOrEmpty(modelInfo.Namespace))
-                sb.AppendLine($"            {modelInfo.Namespace}.{modelInfo.ClassName}.GetEntityModel(),");
-            else
-                sb.AppendLine($"            {modelInfo.ClassName}.GetEntityModel(),");
+            sb.AppendLine($"            {modelInfo.ClassName}.GetEntityModel(),");
         }
 
         sb.AppendLine("        };");
@@ -127,9 +147,65 @@ public class ModelSetSourceGenerator : ISourceGenerator
         sb.AppendLine("    /// 获取集合中的模型数量");
         sb.AppendLine("    /// </summary>");
         sb.AppendLine("    public int Count => _models.Length;");
+        sb.AppendLine();
+
+        // 生成 GetModel<T>() 方法
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 获取指定类型的模型");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <typeparam name=\"T\">模型类型</typeparam>");
+        sb.AppendLine("    /// <returns>指定类型的模型</returns>");
+        sb.AppendLine("    /// <exception cref=\"System.NotSupportedException\">当类型不匹配时抛出</exception>");
+        sb.AppendLine("    public IEntityModel GetModel<T>() where T : class");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return typeof(T) switch");
+        sb.AppendLine("        {");
+        foreach (var modelInfo in modelClasses)
+        {
+            var fieldName = GetFieldName(modelInfo.ClassName);
+            sb.AppendLine($"            var t when t == _{fieldName} => {modelInfo.ClassName}.GetEntityModel(),");
+        }
+        sb.AppendLine("            _ => throw new System.NotSupportedException($\"不支持的模型类型: {typeof(T).FullName}\")");
+        sb.AppendLine("        };");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+
+        // 生成 TryGetModel<T>() 方法
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 尝试获取指定类型的模型");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <typeparam name=\"T\">模型类型</typeparam>");
+        sb.AppendLine("    /// <returns>模型对象，未找到时返回 null</returns>");
+        sb.AppendLine("#if !NETSTANDARD2_0");
+        sb.AppendLine("    public IEntityModel? TryGetModel<T>() where T : class");
+        sb.AppendLine("#else");
+        sb.AppendLine("    public IEntityModel TryGetModel<T>() where T : class");
+        sb.AppendLine("#endif");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return typeof(T) switch");
+        sb.AppendLine("        {");
+        foreach (var modelInfo in modelClasses)
+        {
+            var fieldName = GetFieldName(modelInfo.ClassName);
+            sb.AppendLine($"            var t when t == _{fieldName} => {modelInfo.ClassName}.GetEntityModel(),");
+        }
+        sb.AppendLine("            _ => null");
+        sb.AppendLine("        };");
+        sb.AppendLine("    }");
         sb.AppendLine("}");
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// 获取类名对应的字段名（将类名转为小写开头）
+    /// </summary>
+    private static string GetFieldName(string className)
+    {
+        if (string.IsNullOrEmpty(className))
+            return className;
+
+        return char.ToLower(className[0]) + className.Substring(1);
     }
 
     /// <summary>
