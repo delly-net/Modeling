@@ -10,33 +10,56 @@ allowed-tools: Read, Write, Bash
 ---
 
 # Git 自动提交
+# 命令：/git-commit-update
 
-此技能自动检测更改、暂存文件，并使用合适的提交消息创建 git 提交。
+# ====================== 核心逻辑 ======================
+# 1. 升级版本号：yyyy.MM.修订号，取最大修订号+1，年份月份使用当前时间
+# 2. 自动提交代码
+# 3. 中文返回结果
+# ======================================================
 
-## 使用方法
+echo "=== 开始执行 Git 自动提交任务 ==="
 
-```
-/git-commit-update
-```
+# 1. 获取当前年份、月份
+CURRENT_YEAR=$(date +%Y)
+CURRENT_MONTH=$(date +%m)
 
-## 功能
+# 2. 查找所有 .csproj 文件
+CSPROJ_FILES=$(find . -name "*.csproj" -type f)
+if [ -z "$CSPROJ_FILES" ]; then
+  echo "❌ 错误：未找到任何 .csproj 文件"
+  exit 1
+fi
 
-1. **升级当前版本号**
-   - 读取所有 `.csproj` 项目中的 `<Version>` 标签
-   - 版本号格式为 `yyyy.MM.修订号`，找到所有项目中修订号最大的版本号
-   - 将修订号加 1，yyyy替换为当前年份，MM替换为当前月份，生成{新的版本号}
-   - 更新所有 `.csproj` 文件中的 `<Version>` 标签为{新的版本号}
-   - 等待所有文件更新完成，再继续下一步
+# 3. 提取最大修订号
+MAX_REVISION=0
+for file in $CSPROJ_FILES; do
+  VERSION=$(grep -oP '<Version>\K[^<]+' "$file" 2>/dev/null | head -1)
+  if [ -n "$VERSION" ]; then
+    IFS='.' read -r y m r <<< "$VERSION"
+    if [[ $r =~ ^[0-9]+$ ]] && (( r > MAX_REVISION )); then
+      MAX_REVISION=$r
+    fi
+  fi
+done
 
-2. **提交代码**
-   - 运行：/eazy-git-commit
-   - 等待执行完成并返回结果
+# 4. 生成新版本号
+NEW_REVISION=$((MAX_REVISION + 1))
+NEW_VERSION="${CURRENT_YEAR}.${CURRENT_MONTH}.${NEW_REVISION}"
 
-3. **返回结果**
-   - 返回**提交代码**步骤的返回结果
-   - 明确告知执行已经结束
-   - 使用中文输出
+# 5. 批量更新所有 .csproj 版本号
+for file in $CSPROJ_FILES; do
+  sed -i "s/<Version>.*<\/Version>/<Version>${NEW_VERSION}<\/Version>/g" "$file"
+done
 
-## 输出
+echo "✅ 版本号更新完成：${NEW_VERSION}"
 
-返回提交哈希和提交内容摘要。
+# 6. 执行 Git 提交
+echo "📤 正在提交代码..."
+COMMIT_RESULT=$(/eazy-git-commit)
+
+# 7. 输出最终结果
+echo -e "\n=== 执行完成 ==="
+echo "新版本号：${NEW_VERSION}"
+echo -e "提交结果：\n${COMMIT_RESULT}"
+echo "✅ 自动提交任务已全部结束"
