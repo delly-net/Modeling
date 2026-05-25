@@ -196,6 +196,11 @@ public class ModelTableSourceGenerator : ISourceGenerator
             sb.AppendLine($"    public IBaseModel PropertyModel => {GetModelClassName(prop.Type)}.Instance;");
             sb.AppendLine();
             sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 属性类型信息");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine($"    public Type PropertyType => typeof({GetTypeofName(prop.Type)});");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
             sb.AppendLine("    /// 获取值");
             sb.AppendLine("    /// </summary>");
             sb.AppendLine("    /// <param name=\"obj\"></param>");
@@ -534,6 +539,21 @@ public class ModelTableSourceGenerator : ISourceGenerator
             return namedType.TypeArguments[0];
         }
         return type;
+    }
+
+    /// <summary>
+    /// 获取可用于 typeof 的类型字符串（解包 nullable 类型）
+    /// </summary>
+    private static string GetTypeofName(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol namedType && namedType.IsGenericType &&
+            namedType.ConstructedFrom?.Name == "Nullable")
+        {
+            type = namedType.TypeArguments[0];
+        }
+
+        var fullTypeName = type.ToString();
+        return fullTypeName.TrimEnd('?');
     }
 
     /// <summary>

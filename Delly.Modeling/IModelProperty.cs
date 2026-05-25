@@ -24,6 +24,11 @@ namespace Delly.Modeling
         IBaseModel PropertyModel { get; }
 
         /// <summary>
+        /// 属性类型信息，源生成阶段使用 typeof(T) 赋值
+        /// </summary>
+        Type PropertyType { get; }
+
+        /// <summary>
         /// 获取属性值
         /// </summary>
         /// <param name="obj">目标对象</param>
