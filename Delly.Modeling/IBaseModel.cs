@@ -36,5 +36,28 @@ namespace Delly.Modeling
         /// </summary>
         Type ClassType { get; }
 
+        /// <summary>
+        /// 将输入对象解析为目标类型实例
+        /// </summary>
+        /// <param name="obj">输入对象</param>
+        /// <returns>目标类型实例</returns>
+        /// <exception cref="ArgumentException">当对象无法转换为目标类型时抛出</exception>
+#if NETSTANDARD2_0
+        object Parse(object obj);
+#else
+        object Parse(object? obj);
+#endif
+
+        /// <summary>
+        /// 尝试将输入对象解析为目标类型实例
+        /// </summary>
+        /// <param name="obj">输入对象</param>
+        /// <returns>目标类型实例，解析失败时返回 null</returns>
+#if NETSTANDARD2_0
+        object TryParse(object obj);
+#else
+        object? TryParse(object? obj);
+#endif
+
     }
 }

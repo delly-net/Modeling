@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Delly.Modeling.Generator;
@@ -100,14 +101,18 @@ public class ModelTableSourceGenerator : ISourceGenerator
                 });
             }
 
-            var source = GenerateSourceCode(namespaceName, className, tableName, propertyMetadatas, indexes, constructors);
+            var targetTypeName = string.IsNullOrEmpty(namespaceName) ? className : $"{namespaceName}.{className}";
+            var source = GenerateSourceCode(context, namespaceName, className, tableName, propertyMetadatas, indexes, constructors);
             var hintName = $"{className}.EntityModel.g.cs";
             context.AddSource(hintName, SourceText.From(source, Encoding.UTF8));
         }
     }
 
-    private static string GenerateSourceCode(string namespaceName, string className, string tableName, List<PropertyMetadata> properties, List<IndexMetadata> indexes, List<ConstructorInfo> constructors)
+    private static string GenerateSourceCode(GeneratorExecutionContext context, string namespaceName, string className, string tableName, List<PropertyMetadata> properties, List<IndexMetadata> indexes, List<ConstructorInfo> constructors)
     {
+        var targetTypeName = string.IsNullOrEmpty(namespaceName) ? className : $"{namespaceName}.{className}";
+        var parserClassName = FindParserClass(context, targetTypeName);
+
         var sb = new StringBuilder();
 
         sb.AppendLine("#nullable enable");
@@ -385,9 +390,163 @@ public class ModelTableSourceGenerator : ISourceGenerator
             sb.AppendLine("        }");
         }
         sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("#if !NETSTANDARD2_0");
+        sb.AppendLine("    // Parser 实例缓存");
+        sb.AppendLine($"    private static Delly.Modeling.IParsable<{className}>? _parser;");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 尝试将输入对象解析为目标类型实例");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+        sb.AppendLine("    /// <returns>目标类型实例，解析失败时返回 null</returns>");
+        sb.AppendLine($"    public object? TryParse(object? obj)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        if (obj == null)");
+        sb.AppendLine("            return null;");
+        sb.AppendLine();
+        sb.AppendLine($"        if (obj is {className} target)");
+        sb.AppendLine("            return target;");
+        sb.AppendLine();
+
+        if (!string.IsNullOrEmpty(parserClassName))
+        {
+            sb.AppendLine($"        // 获取或创建 Parser 实例");
+            sb.AppendLine("        if (_parser == null)");
+            sb.AppendLine($"            _parser = new {parserClassName}();");
+            sb.AppendLine();
+            sb.AppendLine("        return _parser.TryParse(obj);");
+        }
+        else
+        {
+            sb.AppendLine($"        throw new NotSupportedException($\"Type {className} does not have a custom parser. Mark a class with [Parsable] that implements Delly.Modeling.IParsable<{className}>.\");");
+        }
+
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 将输入对象解析为目标类型实例");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+        sb.AppendLine("    /// <returns>目标类型实例</returns>");
+        sb.AppendLine($"    public object Parse(object? obj)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        var result = TryParse(obj);");
+        sb.AppendLine("        if (result == null)");
+        sb.AppendLine($"            throw new ArgumentException($\"Cannot convert {{obj?.GetType().Name ?? \"null\"}} to {className}\");");
+        sb.AppendLine("        return result;");
+        sb.AppendLine("    }");
+        sb.AppendLine("#else");
+        sb.AppendLine("    // Parser 实例缓存");
+        sb.AppendLine($"    private static Delly.Modeling.IParsable<{className}> _parser;");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 尝试将输入对象解析为目标类型实例");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+        sb.AppendLine("    /// <returns>目标类型实例，解析失败时返回 null</returns>");
+        sb.AppendLine($"    public object TryParse(object obj)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        if (obj == null)");
+        sb.AppendLine("            return null;");
+        sb.AppendLine();
+        sb.AppendLine($"        if (obj is {className} target)");
+        sb.AppendLine("            return target;");
+        sb.AppendLine();
+
+        if (!string.IsNullOrEmpty(parserClassName))
+        {
+            sb.AppendLine($"        // 获取或创建 Parser 实例");
+            sb.AppendLine("        if (_parser == null)");
+            sb.AppendLine($"            _parser = new {parserClassName}();");
+            sb.AppendLine();
+            sb.AppendLine("        return _parser.TryParse(obj);");
+        }
+        else
+        {
+            sb.AppendLine($"        throw new NotSupportedException($\"Type {className} does not have a custom parser. Mark a class with [Parsable] that implements Delly.Modeling.IParsable<{className}>.\");");
+        }
+
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 将输入对象解析为目标类型实例");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+        sb.AppendLine("    /// <returns>目标类型实例</returns>");
+        sb.AppendLine($"    public object Parse(object obj)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        var result = TryParse(obj);");
+        sb.AppendLine("        if (result == null)");
+        sb.AppendLine($"            throw new ArgumentException($\"Cannot convert {{(obj != null ? obj.GetType().Name : \"null\")}} to {className}\");");
+        sb.AppendLine("        return result;");
+        sb.AppendLine("    }");
+        sb.AppendLine("#endif");
         sb.AppendLine("}");
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// 查找指定类型对应的 Parser 类
+    /// </summary>
+    private static string FindParserClass(GeneratorExecutionContext context, string targetTypeName)
+    {
+        var parsableAttrSymbol = context.Compilation.GetTypeByMetadataName("Delly.Modeling.ParsableAttribute");
+        if (parsableAttrSymbol == null)
+            return string.Empty;
+
+        var iparsableInterface = context.Compilation.GetTypeByMetadataName("Delly.Modeling.IParsable`1");
+        if (iparsableInterface == null)
+            return string.Empty;
+
+        var candidates = new List<string>();
+
+        foreach (var syntaxTree in context.Compilation.SyntaxTrees)
+        {
+            if (syntaxTree.FilePath.Contains("obj/"))
+                continue;
+
+            var root = syntaxTree.GetRoot();
+            var classNodes = root.DescendantNodes().OfType<ClassDeclarationSyntax>();
+
+            foreach (var classNode in classNodes)
+            {
+                var semanticModel = context.Compilation.GetSemanticModel(syntaxTree);
+                var classSymbol = semanticModel.GetDeclaredSymbol(classNode);
+                if (classSymbol == null)
+                    continue;
+
+                // 检查是否有 ParsableAttribute 特性
+                var hasParsableAttribute = classSymbol.GetAttributes()
+                    .Any(a => a.AttributeClass?.Equals(parsableAttrSymbol, SymbolEqualityComparer.Default) == true);
+
+                if (!hasParsableAttribute)
+                    continue;
+
+                // 检查是否实现了 IParsable<T> 接口
+                foreach (var @interface in classSymbol.AllInterfaces)
+                {
+                    if (@interface.OriginalDefinition?.Equals(iparsableInterface, SymbolEqualityComparer.Default) == true &&
+                        @interface.TypeArguments.Length == 1)
+                    {
+                        var targetType = @interface.TypeArguments[0];
+                        // 验证 T 是否为目标类型（使用完全限定名）
+                        if (targetType.ToString() == targetTypeName)
+                        {
+                            candidates.Add(classSymbol.ToString());
+                        }
+                    }
+                }
+            }
+        }
+
+        return candidates.Count switch
+        {
+            0 => string.Empty,
+            1 => candidates[0],
+            _ => throw new InvalidOperationException($"Multiple IParsable<{targetTypeName}> implementations found: {string.Join(", ", candidates)}")
+        };
     }
 
     /// <summary>

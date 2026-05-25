@@ -38,5 +38,48 @@ namespace Delly.Modeling.Models
         /// <param name="args">构造函数参数数组</param>
         /// <returns>模型类型的新实例</returns>
         public object CreateInstance(params object[] args) => args == null || args.Length == 0 ? 0L : Convert.ToInt64(args[0]);
+
+        /// <summary>
+        /// 将输入对象解析为 Int64 实例
+        /// </summary>
+        /// <param name="obj">输入对象</param>
+        /// <returns>Int64 实例</returns>
+#if NETSTANDARD2_0
+        public object Parse(object obj)
+#else
+        public object Parse(object? obj)
+#endif
+        {
+            var result = TryParse(obj);
+            if (result == null)
+                throw new ArgumentException($"Cannot convert {obj?.GetType().Name ?? "null"} to Int64");
+            return result;
+        }
+
+        /// <summary>
+        /// 尝试将输入对象解析为 Int64 实例
+        /// </summary>
+        /// <param name="obj">输入对象</param>
+        /// <returns>Int64 实例，解析失败时返回 null</returns>
+#if NETSTANDARD2_0
+        public object TryParse(object obj)
+#else
+        public object? TryParse(object? obj)
+#endif
+        {
+            if (obj == null)
+                return null;
+
+            if (obj is long value)
+                return value;
+
+            if (obj is string str && long.TryParse(str, out var longVal))
+                return longVal;
+
+            if (obj is int intVal)
+                return (long)intVal;
+
+            return null;
+        }
     }
 }
