@@ -225,7 +225,7 @@ public class ModelableSourceGenerator : ISourceGenerator
         sb.AppendLine("    /// </summary>");
         sb.AppendLine("    /// <param name=\"args\">构造函数参数数组</param>");
         sb.AppendLine("    /// <returns>模型类型的新实例</returns>");
-        sb.AppendLine("    public object CreateInstance(object[] args)");
+        sb.AppendLine("    public object CreateInstance(params object[] args)");
         sb.AppendLine("    {");
         sb.AppendLine("        if (args == null) args = new object[0];");
 

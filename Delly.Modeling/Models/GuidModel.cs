@@ -32,6 +32,6 @@ namespace Delly.Modeling.Models
         /// </summary>
         /// <param name="args">构造函数参数数组</param>
         /// <returns>模型类型的新实例</returns>
-        public object CreateInstance(object[] args) => args == null || args.Length == 0 ? Guid.Empty : (args[0] is Guid guid ? guid : Guid.Parse(args[0]?.ToString() ?? Guid.Empty.ToString()));
+        public object CreateInstance(params object[] args) => args == null || args.Length == 0 ? Guid.Empty : (args[0] is Guid guid ? guid : Guid.Parse(args[0]?.ToString() ?? Guid.Empty.ToString()));
     }
 }

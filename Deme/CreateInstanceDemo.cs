@@ -14,7 +14,7 @@ public class CreateInstanceDemo
     public void Run()
     {
         Console.WriteLine("============================================");
-        Console.WriteLine("CreateInstance 功能演示（参数化构造函数）");
+        Console.WriteLine("CreateInstance 功能演示（params 参数）");
         Console.WriteLine("============================================\n");
 
         // ============================================
@@ -29,10 +29,10 @@ public class CreateInstanceDemo
 
         // 带参数创建（User 有一个参数构造函数）
         var userId = Guid.NewGuid().ToString("N");
-        var user1 = (User)userModel.CreateInstance([userId]);
+        var user1 = (User)userModel.CreateInstance(userId);
         Console.WriteLine($"  带参数创建 user1: Id={user1.Id}, Name={user1.Name}");
 
-        var user2 = (User)userModel.CreateInstance([Guid.NewGuid().ToString("N")]);
+        var user2 = (User)userModel.CreateInstance(Guid.NewGuid().ToString("N"));
         user2.Name = "张三";
         user2.Age = 25;
         Console.WriteLine($"  带参数创建 user2: Id={user2.Id}, Name={user2.Name}, Age={user2.Age}");
@@ -51,10 +51,10 @@ public class CreateInstanceDemo
 
         // 带参数创建（UserEntity 有一个参数构造函数）
         var entityId = Guid.NewGuid().ToString("N");
-        var entityUser1 = (UserEntity)entityModel.CreateInstance([entityId]);
+        var entityUser1 = (UserEntity)entityModel.CreateInstance(entityId);
         Console.WriteLine($"  带参数创建 entityUser1: Id={entityUser1.Id}, Name={entityUser1.Name}");
 
-        var entityUser2 = (UserEntity)entityModel.CreateInstance([Guid.NewGuid().ToString("N")]);
+        var entityUser2 = (UserEntity)entityModel.CreateInstance(Guid.NewGuid().ToString("N"));
         entityUser2.Name = "李四";
         entityUser2.Age = 30;
         Console.WriteLine($"  带参数创建 entityUser2: Id={entityUser2.Id}, Name={entityUser2.Name}, Age={entityUser2.Age}");
@@ -71,8 +71,8 @@ public class CreateInstanceDemo
         Console.WriteLine($"  模型名称: {queryModel.Name}");
         Console.WriteLine($"  类名: {queryModel.ClassName}");
 
-        // 无参创建（UserQuery 有无参构造函数）
-        var query1 = (UserQuery)queryModel.CreateInstance([]);
+        // 无参创建（UserQuery 有无参构造函数，使用 params 可以直接调用）
+        var query1 = (UserQuery)queryModel.CreateInstance();
         Console.WriteLine($"  无参创建 query1: Username={query1.Username}, MinAge={query1.MinAge}");
 
         // 修改属性
@@ -82,7 +82,7 @@ public class CreateInstanceDemo
         Console.WriteLine($"  修改后 query1: Username={query1.Username}, MinAge={query1.MinAge}, MaxAge={query1.MaxAge}");
 
         // 创建另一个实例
-        var query2 = (UserQuery)queryModel.CreateInstance([]);
+        var query2 = (UserQuery)queryModel.CreateInstance();
         query2.Username = "赵六";
         Console.WriteLine($"  无参创建 query2: Username={query2.Username}");
 
@@ -98,7 +98,7 @@ public class CreateInstanceDemo
         for (int i = 0; i < 5; i++)
         {
             var id = Guid.NewGuid().ToString("N");
-            var user = (User)userModel.CreateInstance([id]);
+            var user = (User)userModel.CreateInstance(id);
             user.Name = $"用户{i + 1}";
             user.Age = 20 + i;
             users.Add(user);
@@ -116,14 +116,14 @@ public class CreateInstanceDemo
         var int64Model = Delly.Modeling.Models.Int64Model.Instance;
         var booleanModel = Delly.Modeling.Models.BooleanModel.Instance;
 
-        Console.WriteLine($"  StringModel.CreateInstance([]): '{stringModel.CreateInstance([])}'");
-        Console.WriteLine($"  StringModel.CreateInstance([\"Hello\"]): '{stringModel.CreateInstance(new object[] { "Hello" })}'");
-        Console.WriteLine($"  Int32Model.CreateInstance([]): {int32Model.CreateInstance([])}");
-        Console.WriteLine($"  Int32Model.CreateInstance([\"42\"]): {int32Model.CreateInstance(new object[] { "42" })}");
-        Console.WriteLine($"  Int64Model.CreateInstance([]): {int64Model.CreateInstance([])}");
-        Console.WriteLine($"  Int64Model.CreateInstance([\"100\"]): {int64Model.CreateInstance(new object[] { "100" })}");
-        Console.WriteLine($"  BooleanModel.CreateInstance([]): {booleanModel.CreateInstance([])}");
-        Console.WriteLine($"  BooleanModel.CreateInstance([\"true\"]): {booleanModel.CreateInstance(new object[] { "true" })}");
+        Console.WriteLine($"  StringModel.CreateInstance(): '{stringModel.CreateInstance()}'");
+        Console.WriteLine($"  StringModel.CreateInstance(\"Hello\"): '{stringModel.CreateInstance("Hello")}'");
+        Console.WriteLine($"  Int32Model.CreateInstance(): {int32Model.CreateInstance()}");
+        Console.WriteLine($"  Int32Model.CreateInstance(\"42\"): {int32Model.CreateInstance("42")}");
+        Console.WriteLine($"  Int64Model.CreateInstance(): {int64Model.CreateInstance()}");
+        Console.WriteLine($"  Int64Model.CreateInstance(\"100\"): {int64Model.CreateInstance("100")}");
+        Console.WriteLine($"  BooleanModel.CreateInstance(): {booleanModel.CreateInstance()}");
+        Console.WriteLine($"  BooleanModel.CreateInstance(\"true\"): {booleanModel.CreateInstance("true")}");
 
         // ============================================
         // 错误处理示例
@@ -135,7 +135,7 @@ public class CreateInstanceDemo
         try
         {
             // User 只有一个参数构造函数，尝试使用0个参数应该抛出异常
-            userModel.CreateInstance([]);
+            userModel.CreateInstance();
         }
         catch (ArgumentException ex)
         {
@@ -145,7 +145,7 @@ public class CreateInstanceDemo
         try
         {
             // 尝试使用不匹配的参数数量
-            userModel.CreateInstance([1, 2, 3]);
+            userModel.CreateInstance(1, 2, 3);
         }
         catch (ArgumentException ex)
         {
