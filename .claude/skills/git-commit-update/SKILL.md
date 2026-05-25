@@ -26,6 +26,7 @@ allowed-tools: Read, Write, Bash
    - 版本号格式为 `yyyy.MM.修订号`，找到所有项目中修订号最大的版本号
    - 将修订号加 1，yyyy替换为当前年份，MM替换为当前月份，生成{新的版本号}
    - 更新所有 `.csproj` 文件中的 `<Version>` 标签为{新的版本号}
+   - 等待所有文件更新完成，再继续下一步
 
 2. **提交代码**
    - 运行：/eazy-git-commit
