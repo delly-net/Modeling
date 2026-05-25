@@ -144,6 +144,9 @@ public class ModelTableSourceGenerator : ISourceGenerator
 
             sb.AppendLine();
             var propertyClassName = $"emp__{className}_{prop.Name}";
+            sb.AppendLine("/// <summary>");
+            sb.AppendLine($"/// {className} 的 {prop.Name} 实体属性模型");
+            sb.AppendLine("/// </summary>");
             sb.AppendLine($"public class {propertyClassName} : IEntityModelProperty");
             sb.AppendLine("{");
             sb.AppendLine("    // 固定静态共享实例");
@@ -219,8 +222,8 @@ public class ModelTableSourceGenerator : ISourceGenerator
             sb.AppendLine("    /// <summary>");
             sb.AppendLine("    /// 设置值");
             sb.AppendLine("    /// </summary>");
-            sb.AppendLine("    /// <param name=\"obj\"></param>");
-            sb.AppendLine("    /// <param name=\"value\"></param>");
+            sb.AppendLine("    /// <param name=\"obj\">目标对象</param>");
+            sb.AppendLine("    /// <param name=\"value\">属性值</param>");
             if (prop.IsReadOnly || prop.SetMethod is null)
             {
                 sb.AppendLine("    /// <exception cref=\"NotSupportedException\"></exception>");
@@ -238,11 +241,12 @@ public class ModelTableSourceGenerator : ISourceGenerator
                 {
                     sb.AppendLine("        if (obj is null) { throw new NoNullAllowedException($\"Target object not allowed to be null.\"); }");
                 }
-                sb.AppendLine($"        var user = ({className})obj;");
+                sb.AppendLine($"        var user = obj as {className};");
+                sb.AppendLine("        if (user == null) { return; }");
                 var conversion = GetConversionExpression(prop.Type, "value");
                 if (!isNullable)
                 {
-                    conversion = $"value is null ? throw new NoNullAllowedException($\"Value not allowed to be null.\") : {conversion}";
+                    conversion = GetConversionExpressionNonNull(prop.Type, "value");
                 }
                 sb.AppendLine($"        user.{prop.Name} = {conversion};");
                 sb.AppendLine("    }");
@@ -252,6 +256,9 @@ public class ModelTableSourceGenerator : ISourceGenerator
 
         // 生成主模型类 emc__ClassName
         sb.AppendLine();
+        sb.AppendLine("/// <summary>");
+        sb.AppendLine($"/// {className} 的实体模型");
+        sb.AppendLine("/// </summary>");
         sb.AppendLine($"public class emc__{className} : IEntityModel");
         sb.AppendLine("{");
         sb.AppendLine();
@@ -390,102 +397,159 @@ public class ModelTableSourceGenerator : ISourceGenerator
         }
         sb.AppendLine("    }");
         sb.AppendLine();
-        sb.AppendLine("#if !NETSTANDARD2_0");
-        sb.AppendLine("    // Parser 实例缓存");
-        sb.AppendLine($"    private static Delly.Modeling.IParsable<{className}>? _parser;");
-        sb.AppendLine();
-        sb.AppendLine("    /// <summary>");
-        sb.AppendLine("    /// 尝试将输入对象解析为目标类型实例");
-        sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
-        sb.AppendLine("    /// <returns>目标类型实例，解析失败时返回 null</returns>");
-        sb.AppendLine($"    public object? TryParse(object? obj)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        if (obj == null)");
-        sb.AppendLine("            return null;");
-        sb.AppendLine();
-        sb.AppendLine($"        if (obj is {className} target)");
-        sb.AppendLine("            return target;");
-        sb.AppendLine();
 
+        // 始终生成 Parse 和 TryParse 方法
         if (!string.IsNullOrEmpty(parserClassName))
         {
-            sb.AppendLine($"        // 获取或创建 Parser 实例");
+            // 有 Parser 时声明 _parser 字段并使用它
+            sb.AppendLine();
+            sb.AppendLine("#if !NETSTANDARD2_0");
+            sb.AppendLine("    // Parser 实例缓存");
+            sb.AppendLine($"    private static Delly.Modeling.IParsable<{className}>? _parser;");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 尝试将输入对象解析为目标类型实例");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+            sb.AppendLine("    /// <returns>目标类型实例，解析失败时返回 null</returns>");
+            sb.AppendLine($"    public object? TryParse(object? obj)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        if (obj == null)");
+            sb.AppendLine("            return null;");
+            sb.AppendLine();
+            sb.AppendLine($"        if (obj is {className} target)");
+            sb.AppendLine("            return target;");
+            sb.AppendLine();
             sb.AppendLine("        if (_parser == null)");
             sb.AppendLine($"            _parser = new {parserClassName}();");
             sb.AppendLine();
             sb.AppendLine("        return _parser.TryParse(obj);");
-        }
-        else
-        {
-            sb.AppendLine("        return null;");
-        }
-
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine("    /// <summary>");
-        sb.AppendLine("    /// 将输入对象解析为目标类型实例");
-        sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
-        sb.AppendLine("    /// <returns>目标类型实例</returns>");
-        sb.AppendLine($"    public object Parse(object? obj)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        var result = TryParse(obj);");
-        sb.AppendLine("        if (result == null)");
-        sb.AppendLine($"            throw new ArgumentException($\"Cannot convert {{obj?.GetType().Name ?? \"null\"}} to {className}\");");
-        sb.AppendLine("        return result;");
-        sb.AppendLine("    }");
-        sb.AppendLine("#else");
-        sb.AppendLine("    // Parser 实例缓存");
-        sb.AppendLine($"    private static Delly.Modeling.IParsable<{className}> _parser;");
-        sb.AppendLine();
-        sb.AppendLine("    /// <summary>");
-        sb.AppendLine("    /// 尝试将输入对象解析为目标类型实例");
-        sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
-        sb.AppendLine("    /// <returns>目标类型实例，解析失败时返回 null</returns>");
-        sb.AppendLine($"    public object TryParse(object obj)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        if (obj == null)");
-        sb.AppendLine("            return null;");
-        sb.AppendLine();
-        sb.AppendLine($"        if (obj is {className} target)");
-        sb.AppendLine("            return target;");
-        sb.AppendLine();
-
-        if (!string.IsNullOrEmpty(parserClassName))
-        {
-            sb.AppendLine($"        // 获取或创建 Parser 实例");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 将输入对象解析为目标类型实例");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+            sb.AppendLine("    /// <returns>目标类型实例</returns>");
+            sb.AppendLine("    /// <exception cref=\"ArgumentException\">当对象无法转换为目标类型时抛出</exception>");
+            sb.AppendLine($"    public object Parse(object? obj)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        var result = TryParse(obj);");
+            sb.AppendLine("        if (result == null)");
+            sb.AppendLine($"            throw new ArgumentException($\"Cannot convert {{obj?.GetType().Name ?? \"null\"}} to {className}\");");
+            sb.AppendLine("        return result;");
+            sb.AppendLine("    }");
+            sb.AppendLine("#else");
+            sb.AppendLine("    // Parser 实例缓存");
+            sb.AppendLine($"    private static Delly.Modeling.IParsable<{className}> _parser;");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 尝试将输入对象解析为目标类型实例");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+            sb.AppendLine("    /// <returns>目标类型实例，解析失败时返回 null</returns>");
+            sb.AppendLine($"    public object TryParse(object obj)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        if (obj == null)");
+            sb.AppendLine("            return null;");
+            sb.AppendLine();
+            sb.AppendLine($"        if (obj is {className} target)");
+            sb.AppendLine("            return target;");
+            sb.AppendLine();
             sb.AppendLine("        if (_parser == null)");
             sb.AppendLine($"            _parser = new {parserClassName}();");
             sb.AppendLine();
             sb.AppendLine("        return _parser.TryParse(obj);");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 将输入对象解析为目标类型实例");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+            sb.AppendLine("    /// <returns>目标类型实例</returns>");
+            sb.AppendLine("    /// <exception cref=\"ArgumentException\">当对象无法转换为目标类型时抛出</exception>");
+            sb.AppendLine($"    public object Parse(object obj)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        var result = TryParse(obj);");
+            sb.AppendLine("        if (result == null)");
+            sb.AppendLine($"            throw new ArgumentException($\"Cannot convert {{(obj != null ? obj.GetType().Name : \"null\")}} to {className}\");");
+            sb.AppendLine("        return result;");
+            sb.AppendLine("    }");
+            sb.AppendLine("#endif");
         }
         else
         {
+            // 没有 Parser 时不声明 _parser 字段，直接返回 null
+            sb.AppendLine();
+            sb.AppendLine("#if !NETSTANDARD2_0");
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 尝试将输入对象解析为目标类型实例");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+            sb.AppendLine("    /// <returns>目标类型实例，解析失败时返回 null</returns>");
+            sb.AppendLine($"    public object? TryParse(object? obj)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        if (obj == null)");
+            sb.AppendLine("            return null;");
+            sb.AppendLine();
+            sb.AppendLine($"        if (obj is {className} target)");
+            sb.AppendLine("            return target;");
+            sb.AppendLine();
             sb.AppendLine("        return null;");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 将输入对象解析为目标类型实例");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+            sb.AppendLine("    /// <returns>目标类型实例</returns>");
+            sb.AppendLine("    /// <exception cref=\"ArgumentException\">当对象无法转换为目标类型时抛出</exception>");
+            sb.AppendLine($"    public object Parse(object? obj)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        var result = TryParse(obj);");
+            sb.AppendLine("        if (result == null)");
+            sb.AppendLine($"            throw new ArgumentException($\"Cannot convert {{obj?.GetType().Name ?? \"null\"}} to {className}\");");
+            sb.AppendLine("        return result;");
+            sb.AppendLine("    }");
+            sb.AppendLine("#else");
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 尝试将输入对象解析为目标类型实例");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+            sb.AppendLine("    /// <returns>目标类型实例，解析失败时返回 null</returns>");
+            sb.AppendLine($"    public object TryParse(object obj)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        if (obj == null)");
+            sb.AppendLine("            return null;");
+            sb.AppendLine();
+            sb.AppendLine($"        if (obj is {className} target)");
+            sb.AppendLine("            return target;");
+            sb.AppendLine();
+            sb.AppendLine("        return null;");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 将输入对象解析为目标类型实例");
+            sb.AppendLine("    /// </summary>");
+            sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
+            sb.AppendLine("    /// <returns>目标类型实例</returns>");
+            sb.AppendLine("    /// <exception cref=\"ArgumentException\">当对象无法转换为目标类型时抛出</exception>");
+            sb.AppendLine($"    public object Parse(object obj)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        var result = TryParse(obj);");
+            sb.AppendLine("        if (result == null)");
+            sb.AppendLine($"            throw new ArgumentException($\"Cannot convert {{(obj != null ? obj.GetType().Name : \"null\")}} to {className}\");");
+            sb.AppendLine("        return result;");
+            sb.AppendLine("    }");
+            sb.AppendLine("#endif");
         }
 
-        sb.AppendLine("    }");
-        sb.AppendLine();
-        sb.AppendLine("    /// <summary>");
-        sb.AppendLine("    /// 将输入对象解析为目标类型实例");
-        sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    /// <param name=\"obj\">输入对象</param>");
-        sb.AppendLine("    /// <returns>目标类型实例</returns>");
-        sb.AppendLine($"    public object Parse(object obj)");
-        sb.AppendLine("    {");
-        sb.AppendLine("        var result = TryParse(obj);");
-        sb.AppendLine("        if (result == null)");
-        sb.AppendLine($"            throw new ArgumentException($\"Cannot convert {{(obj != null ? obj.GetType().Name : \"null\")}} to {className}\");");
-        sb.AppendLine("        return result;");
-        sb.AppendLine("    }");
-        sb.AppendLine("#endif");
         sb.AppendLine("}");
 
         return sb.ToString();
     }
 
+#if !NETSTANDARD2_0
     /// <summary>
     /// 查找目标类对应的 Parser 类型
     /// </summary>
@@ -493,6 +557,15 @@ public class ModelTableSourceGenerator : ISourceGenerator
     /// <param name="context">生成器执行上下文</param>
     /// <returns>Parser 类型的完全限定名，如果未找到则返回 null</returns>
     private static string? FindParserType(INamedTypeSymbol targetClass, GeneratorExecutionContext context)
+#else
+    /// <summary>
+    /// 查找目标类对应的 Parser 类型
+    /// </summary>
+    /// <param name="targetClass">目标类符号</param>
+    /// <param name="context">生成器执行上下文</param>
+    /// <returns>Parser 类型的完全限定名，如果未找到则返回 null</returns>
+    private static string FindParserType(INamedTypeSymbol targetClass, GeneratorExecutionContext context)
+#endif
     {
         var parsableAttrSymbol = context.Compilation.GetTypeByMetadataName("Delly.Modeling.ParsableAttribute");
         if (parsableAttrSymbol == null)
@@ -542,7 +615,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
                     "Usage",
                     DiagnosticSeverity.Error,
                     true),
-                targetClass.Locations.FirstOrDefault(),
+                targetClass.Locations.FirstOrDefault()!,
                 parserTypeSymbol.Name,
                 targetClass.Name));
             return null;
@@ -930,6 +1003,33 @@ public class ModelTableSourceGenerator : ISourceGenerator
             "System.DateTime" => $"Convert.ToDateTime({valueExpr})",
             "System.Guid" => $"{valueExpr} is Guid guid ? guid : Guid.Parse({valueExpr}?.ToString() ?? Guid.Empty.ToString())",
             _ => $"{valueExpr}?.ToString()"
+        };
+    }
+
+    /// <summary>
+    /// 获取类型转换表达式（用于非空值）
+    /// </summary>
+    private static string GetConversionExpressionNonNull(ITypeSymbol type, string valueExpr)
+    {
+        if (type is INamedTypeSymbol namedType && namedType.IsGenericType &&
+            namedType.ConstructedFrom?.Name == "Nullable")
+        {
+            type = namedType.TypeArguments[0];
+        }
+
+        var fullTypeName = type.ToString();
+
+        return fullTypeName switch
+        {
+            "string" or "System.String" => $"{valueExpr}.ToString() ?? string.Empty",
+            "int" or "System.Int32" => $"Convert.ToInt32({valueExpr})",
+            "long" or "System.Int64" => $"Convert.ToInt64({valueExpr})",
+            "bool" or "System.Boolean" => $"Convert.ToBoolean({valueExpr})",
+            "double" or "System.Double" => $"Convert.ToDouble({valueExpr})",
+            "decimal" or "System.Decimal" => $"Convert.ToDecimal({valueExpr})",
+            "System.DateTime" => $"Convert.ToDateTime({valueExpr})",
+            "System.Guid" => $"{valueExpr} is Guid guid ? guid : Guid.Parse({valueExpr}.ToString() ?? Guid.Empty.ToString())",
+            _ => $"{valueExpr}.ToString() ?? string.Empty"
         };
     }
 }

@@ -157,11 +157,18 @@ public class ModuleA
 {
     private readonly DefaultEntityModelFactory _factory;
 
+    /// <summary>
+    /// 初始化 ModuleA 的新实例
+    /// </summary>
+    /// <param name="factory">实体模型工厂</param>
     public ModuleA(DefaultEntityModelFactory factory)
     {
         _factory = factory;
     }
 
+    /// <summary>
+    /// 注册模块A的模型
+    /// </summary>
     public void RegisterModels()
     {
         _factory.Add(UserEntity.GetEntityModel());
@@ -176,11 +183,18 @@ public class ModuleB
 {
     private readonly DefaultEntityModelFactory _factory;
 
+    /// <summary>
+    /// 初始化 ModuleB 的新实例
+    /// </summary>
+    /// <param name="factory">实体模型工厂</param>
     public ModuleB(DefaultEntityModelFactory factory)
     {
         _factory = factory;
     }
 
+    /// <summary>
+    /// 注册模块B的模型
+    /// </summary>
     public void RegisterModels()
     {
         // 这里可以注册其他模块的模型
