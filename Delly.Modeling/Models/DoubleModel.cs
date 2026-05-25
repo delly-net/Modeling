@@ -28,6 +28,11 @@ namespace Delly.Modeling.Models
         public string Namespace => nameof(System);
 
         /// <summary>
+        /// 模型类型信息，源生成阶段使用 typeof(T) 赋值
+        /// </summary>
+        public Type ClassType => typeof(double);
+
+        /// <summary>
         /// 创建模型类型的新实例
         /// </summary>
         /// <param name="args">构造函数参数数组</param>

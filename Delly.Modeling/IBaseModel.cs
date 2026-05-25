@@ -31,5 +31,10 @@ namespace Delly.Modeling
         /// <returns>模型类型的新实例</returns>
         object CreateInstance(params object[] args);
 
+        /// <summary>
+        /// 模型类型信息，源生成阶段使用 typeof(T) 赋值
+        /// </summary>
+        Type ClassType { get; }
+
     }
 }

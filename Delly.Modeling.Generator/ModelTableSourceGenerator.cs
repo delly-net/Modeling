@@ -270,6 +270,11 @@ public class ModelTableSourceGenerator : ISourceGenerator
         sb.AppendLine($"    public string Namespace => \"{namespaceName}\";");
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 模型类型信息，源生成阶段使用 typeof(T) 赋值");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine($"    public Type ClassType => typeof({className});");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 获取属性集合");
         sb.AppendLine("    /// </summary>");
         sb.AppendLine("    /// <returns></returns>");
