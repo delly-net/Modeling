@@ -5,7 +5,6 @@ effort: low
 user-invocable: true
 disable-model-invocation: true
 agent: Explore
-context: fork
 allowed-tools: Read, Write, Bash
 ---
 
