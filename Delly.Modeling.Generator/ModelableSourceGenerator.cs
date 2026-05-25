@@ -45,7 +45,7 @@ public class ModelableSourceGenerator : ISourceGenerator
                 continue;
 
             var model = context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree);
-            var symbol = model.GetDeclaredSymbol(classDeclaration);
+            var symbol = model.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
             if (symbol is null)
                 continue;
 
@@ -64,16 +64,15 @@ public class ModelableSourceGenerator : ISourceGenerator
                 });
             }
 
-            var source = GenerateSourceCode(context, namespaceName, className, properties, constructors);
+            var source = GenerateSourceCode(context, namespaceName, className, properties, constructors, symbol);
             var hintName = $"{className}.Model.g.cs";
             context.AddSource(hintName, SourceText.From(source, Encoding.UTF8));
         }
     }
 
-    private static string GenerateSourceCode(GeneratorExecutionContext context, string namespaceName, string className, List<IPropertySymbol> properties, List<ConstructorInfo> constructors)
+    private static string GenerateSourceCode(GeneratorExecutionContext context, string namespaceName, string className, List<IPropertySymbol> properties, List<ConstructorInfo> constructors, INamedTypeSymbol targetClass)
     {
-        var targetTypeName = string.IsNullOrEmpty(namespaceName) ? className : $"{namespaceName}.{className}";
-        var parserClassName = FindParserClass(context, targetTypeName);
+        var parserClassName = FindParserType(targetClass, context);
 
         var sb = new StringBuilder();
 
@@ -311,7 +310,7 @@ public class ModelableSourceGenerator : ISourceGenerator
         }
         else
         {
-            sb.AppendLine($"        throw new NotSupportedException($\"Type {className} does not have a custom parser. Mark a class with [Parsable] that implements Delly.Modeling.IParsable<{className}>.\");");
+            sb.AppendLine("        return null;");
         }
 
         sb.AppendLine("    }");
@@ -357,7 +356,7 @@ public class ModelableSourceGenerator : ISourceGenerator
         }
         else
         {
-            sb.AppendLine($"        throw new NotSupportedException($\"Type {className} does not have a custom parser. Mark a class with [Parsable] that implements Delly.Modeling.IParsable<{className}>.\");");
+            sb.AppendLine("        return null;");
         }
 
         sb.AppendLine("    }");
@@ -382,65 +381,68 @@ public class ModelableSourceGenerator : ISourceGenerator
     }
 
     /// <summary>
-    /// 查找指定类型对应的 Parser 类
+    /// 查找目标类对应的 Parser 类型
     /// </summary>
-    private static string FindParserClass(GeneratorExecutionContext context, string targetTypeName)
+    /// <param name="targetClass">目标类符号</param>
+    /// <param name="context">生成器执行上下文</param>
+    /// <returns>Parser 类型的完全限定名，如果未找到则返回 null</returns>
+    private static string? FindParserType(INamedTypeSymbol targetClass, GeneratorExecutionContext context)
     {
         var parsableAttrSymbol = context.Compilation.GetTypeByMetadataName("Delly.Modeling.ParsableAttribute");
         if (parsableAttrSymbol == null)
-            return string.Empty;
+            return null;
 
         var iparsableInterface = context.Compilation.GetTypeByMetadataName("Delly.Modeling.IParsable`1");
         if (iparsableInterface == null)
-            return string.Empty;
+            return null;
 
-        var candidates = new List<string>();
+        // 查找目标类上的 [Parsable(typeof(ParserClass))] 特性
+        var parsableAttr = targetClass.GetAttributes()
+            .FirstOrDefault(a => a.AttributeClass?.Equals(parsableAttrSymbol, SymbolEqualityComparer.Default) == true);
 
-        foreach (var syntaxTree in context.Compilation.SyntaxTrees)
+        if (parsableAttr == null || parsableAttr.ConstructorArguments.Length == 0)
+            return null;
+
+        // 获取 Parser 类型
+        var parserTypeSymbol = parsableAttr.ConstructorArguments[0].Value as INamedTypeSymbol;
+        if (parserTypeSymbol == null)
+            return null;
+
+        // 验证 Parser 类型是否实现了 IParsable<T>
+        bool foundMatchingInterface = false;
+        foreach (var iface in parserTypeSymbol.AllInterfaces)
         {
-            if (syntaxTree.FilePath.Contains("obj/"))
-                continue;
-
-            var root = syntaxTree.GetRoot();
-            var classNodes = root.DescendantNodes().OfType<ClassDeclarationSyntax>();
-
-            foreach (var classNode in classNodes)
+            if (iface.Name == "IParsable" && iface is INamedTypeSymbol namedInterface &&
+                namedInterface.IsGenericType && namedInterface.TypeArguments.Length == 1)
             {
-                var semanticModel = context.Compilation.GetSemanticModel(syntaxTree);
-                var classSymbol = semanticModel.GetDeclaredSymbol(classNode);
-                if (classSymbol == null)
-                    continue;
-
-                // 检查是否有 ParsableAttribute 特性
-                var hasParsableAttribute = classSymbol.GetAttributes()
-                    .Any(a => a.AttributeClass?.Equals(parsableAttrSymbol, SymbolEqualityComparer.Default) == true);
-
-                if (!hasParsableAttribute)
-                    continue;
-
-                // 检查是否实现了 IParsable<T> 接口
-                foreach (var @interface in classSymbol.AllInterfaces)
+                var targetTypeArgument = namedInterface.TypeArguments[0];
+                // 验证泛型参数 T 是否为目标类类型
+                if (SymbolEqualityComparer.Default.Equals(targetTypeArgument, targetClass))
                 {
-                    if (@interface.OriginalDefinition?.Equals(iparsableInterface, SymbolEqualityComparer.Default) == true &&
-                        @interface.TypeArguments.Length == 1)
-                    {
-                        var targetType = @interface.TypeArguments[0];
-                        // 验证 T 是否为目标类型（使用完全限定名）
-                        if (targetType.ToString() == targetTypeName)
-                        {
-                            candidates.Add(classSymbol.ToString());
-                        }
-                    }
+                    foundMatchingInterface = true;
+                    break;
                 }
             }
         }
 
-        return candidates.Count switch
+        if (!foundMatchingInterface)
         {
-            0 => string.Empty,
-            1 => candidates[0],
-            _ => throw new InvalidOperationException($"Multiple IParsable<{targetTypeName}> implementations found: {string.Join(", ", candidates)}")
-        };
+            // 报告诊断错误：Parser 类型未实现 IParsable<目标类>
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(
+                    "DM002",
+                    "Invalid Parser Type",
+                    "Parser type '{0}' must implement IParsable<{1}> interface",
+                    "Usage",
+                    DiagnosticSeverity.Error,
+                    true),
+                targetClass.Locations.FirstOrDefault(),
+                parserTypeSymbol.Name,
+                targetClass.Name));
+            return null;
+        }
+
+        return parserTypeSymbol.ToString();
     }
 
     /// <summary>

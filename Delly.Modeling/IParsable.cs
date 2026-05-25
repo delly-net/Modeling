@@ -9,8 +9,8 @@ namespace Delly.Modeling
     /// </summary>
     /// <typeparam name="T">目标类型</typeparam>
     /// <remarks>
-    /// 实现此接口的类型为 T 提供解析能力。实现类必须同时标记 [Parsable] 特性，
-    /// 并提供无参构造函数。
+    /// 实现此接口的类型为 T 提供解析能力。实现类必须提供无参构造函数，
+    /// 并通过在目标类上标记 [Parsable(typeof(ParserClass))] 特性来关联。
     /// 接口中包含一个 TryParse 实例方法。
     /// </remarks>
     public interface IParsable<T>
