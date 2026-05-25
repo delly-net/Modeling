@@ -1,5 +1,5 @@
 ---
-name: git-push-update
+name: git-commit-update
 description: 自动暂存更改、生成 git 提交消息并提交推送
 effort: low
 user-invocable: true
@@ -16,7 +16,7 @@ allowed-tools: Read, Write, Bash
 ## 使用方法
 
 ```
-/git-push-update
+/git-commit-update
 ```
 
 ## 功能
@@ -28,7 +28,7 @@ allowed-tools: Read, Write, Bash
    - 更新所有 `.csproj` 文件中的 `<Version>` 标签为{新的版本号}
 
 2. **提交代码**
-   - 运行：/eazy-git-push
+   - 运行：/eazy-git-commit
    - 等待执行完成并返回结果
 
 3. **返回结果**
