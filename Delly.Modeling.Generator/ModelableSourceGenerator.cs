@@ -132,6 +132,18 @@ public class ModelableSourceGenerator : ISourceGenerator
             sb.AppendLine($"    public Type PropertyType => typeof({GetTypeofName(property.Type)});");
             sb.AppendLine();
             sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 获取属性是否可读取");
+            sb.AppendLine("    /// </summary>");
+            var canRead = property.GetMethod != null;
+            sb.AppendLine($"    public bool CanRead => {(canRead ? "true" : "false")};");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
+            sb.AppendLine("    /// 获取属性是否可写入");
+            sb.AppendLine("    /// </summary>");
+            var canWrite = property.SetMethod != null;
+            sb.AppendLine($"    public bool CanWrite => {(canWrite ? "true" : "false")};");
+            sb.AppendLine();
+            sb.AppendLine("    /// <summary>");
             sb.AppendLine("    /// 获取值");
             sb.AppendLine("    /// </summary>");
             sb.AppendLine("    /// <param name=\"obj\"></param>");

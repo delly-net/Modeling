@@ -29,6 +29,16 @@ namespace Delly.Modeling
         Type PropertyType { get; }
 
         /// <summary>
+        /// 获取属性是否可读取
+        /// </summary>
+        bool CanRead { get; }
+
+        /// <summary>
+        /// 获取属性是否可写入
+        /// </summary>
+        bool CanWrite { get; }
+
+        /// <summary>
         /// 获取属性值
         /// </summary>
         /// <param name="obj">目标对象</param>
