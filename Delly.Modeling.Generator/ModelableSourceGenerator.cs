@@ -222,6 +222,11 @@ public class ModelableSourceGenerator : ISourceGenerator
         sb.AppendLine($"    public Type ClassType => typeof({className});");
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 是否为值类型对象");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    public bool IsValue => false;");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 获取集合");
         sb.AppendLine("    /// </summary>");
         sb.AppendLine("    /// <returns></returns>");

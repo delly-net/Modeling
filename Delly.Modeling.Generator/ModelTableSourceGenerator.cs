@@ -303,6 +303,11 @@ public class ModelTableSourceGenerator : ISourceGenerator
         sb.AppendLine($"    public Type ClassType => typeof({className});");
         sb.AppendLine();
         sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 是否为值类型对象");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    public bool IsValue => false;");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 获取属性集合");
         sb.AppendLine("    /// </summary>");
         sb.AppendLine("    /// <returns></returns>");

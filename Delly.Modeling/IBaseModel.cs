@@ -59,5 +59,10 @@ namespace Delly.Modeling
         object? TryParse(object? obj);
 #endif
 
+        /// <summary>
+        /// 是否为值类型对象，基础值类型和 string 为 true，其他 class 类型为 false
+        /// </summary>
+        bool IsValue { get; }
+
     }
 }

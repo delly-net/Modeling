@@ -78,5 +78,10 @@ namespace Delly.Modeling.Models
 
             return null;
         }
+
+        /// <summary>
+        /// 是否为值类型对象
+        /// </summary>
+        public bool IsValue => true;
     }
 }
