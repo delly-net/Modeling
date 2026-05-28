@@ -64,8 +64,11 @@ Generated methods include:
 - Classes must be declared as `partial` to receive generated code
 - Source generator output is emitted to `obj/Generated` (check this directory for generated code)
 - The generator uses Roslyn's CSharp syntax APIs
+- Generated code must use `partial` keyword and provide complete XML documentation comments
 
 ## Code Style & Comment Standards
+
+### Documentation Comments
 
 - **Public members**: All public classes, methods, properties, and interfaces MUST have XML documentation comments using `///` syntax
   - Example:
@@ -79,8 +82,57 @@ Generated methods include:
     ```
 - **Private members**: Only use `//` comments for private members to reduce code volume
   - Leave one space after `//` symbol before the comment content
+  - Example:
+    ```csharp
+    // Cache property information
+    private PropertyInfo[]? _properties;
+    ```
 - **Parameter matching**: XML `param` names must exactly match actual parameter names in the method signature
-- **Nullable annotations**: Use `object?` for nullable object parameters in interfaces and public APIs
+
+### Code Style
+
+- **if statements**: Must use braces, even for single-line statements
+  - Single-line rule: When the entire statement is under 120 characters, merge condition and execution into one line
+  ```csharp
+  // ✅ Correct - Single line
+  if (a) { b(); }
+
+  // ✅ Correct - Multi line (over 120 chars)
+  if (veryLongConditionName && anotherVeryLongCondition)
+  {
+      ExecuteMethod();
+  }
+
+  // ❌ Incorrect - No braces
+  if (obj == null)
+      return null;
+  ```
+
+### Nullable Annotations
+
+- Use `object?` for nullable object parameters in interfaces and public APIs
+- For `Models/*.cs` files, use conditional compilation to support both .NET Standard 2.0 and modern .NET:
+  ```csharp
+  #if !NETSTANDARD2_0
+  #nullable enable
+  #endif
+
+  #if !NETSTANDARD2_0
+  public object? TryParse(object? obj)
+  #else
+  public object TryParse(object obj)
+  #endif
+  {
+      // Implementation
+  }
+  ```
+
+### Naming Conventions
+
+- Classes: PascalCase
+- Methods: PascalCase
+- Properties: PascalCase
+- Private fields: _camelCase
 
 ## Build & Run
 

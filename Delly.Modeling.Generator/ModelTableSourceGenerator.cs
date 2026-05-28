@@ -30,26 +30,22 @@ public class ModelTableSourceGenerator : ISourceGenerator
     /// </summary>
     public void Execute(GeneratorExecutionContext context)
     {
-        if (context.SyntaxReceiver is not ModelTableSyntaxReceiver receiver || receiver.Classes.Count == 0)
-            return;
+        if (context.SyntaxReceiver is not ModelTableSyntaxReceiver receiver || receiver.Classes.Count == 0) { return; }
 
         foreach (var classDeclaration in receiver.Classes)
         {
-            if (classDeclaration.SyntaxTree.FilePath.Contains("obj/"))
-                continue;
+            if (classDeclaration.SyntaxTree.FilePath.Contains("obj/")) { continue; }
 
             var model = context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree);
             var symbol = model.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
-            if (symbol is null)
-                continue;
+            if (symbol is null) { continue; }
 
             var namespaceSymbol = symbol.ContainingNamespace;
             var namespaceName = namespaceSymbol.IsGlobalNamespace ? "" : namespaceSymbol.ToString();
             var className = symbol.Name;
 
             // 特性互斥检测
-            if (!CheckAttributeMutualExclusion(symbol, context))
-                continue;
+            if (!CheckAttributeMutualExclusion(symbol, context)) { continue; }
 
             var isQuery = IsMoQuery(symbol);
 
@@ -62,8 +58,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
             foreach (var prop in symbol.GetMembers().OfType<IPropertySymbol>())
             {
                 var meta = GetPropertyMetadata(prop, isQuery);
-                if (meta == null)
-                    continue;
+                if (meta == null) { continue; }
 
                 propertyMetadatas.Add(meta);
             }
@@ -702,8 +697,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
     {
         var attr = symbol.GetAttributes().FirstOrDefault(a =>
             a.AttributeClass?.Name == "MoTableAttribute");
-        if (attr == null)
-            return null;
+        if (attr == null) { return null; }
         var nameArg = attr.ConstructorArguments.FirstOrDefault();
         return nameArg.Value?.ToString();
     }
@@ -835,8 +829,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
             a.AttributeClass?.Name == "MoColumnAttribute");
 
         // 没有 [MoColumn] 特性则不参与源生成
-        if (moColumnAttr == null)
-            return null;
+        if (moColumnAttr == null) { return null; }
 
         // 读取 [MoColumn] 的 Name 参数（构造函数参数）
         var columnName = moColumnAttr.ConstructorArguments
@@ -878,8 +871,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
         var columnIndexes = new List<ColumnIndexEntry>();
         foreach (var attr in property.GetAttributes())
         {
-            if (attr.AttributeClass?.Name != "MoColumnIndexAttribute")
-                continue;
+            if (attr.AttributeClass?.Name != "MoColumnIndexAttribute") { continue; }
 
             var indexName = string.Empty;
             var isUnique = false;
@@ -939,9 +931,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
         return value.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 
-    /// <summary>
-    /// 属性元数据
-    /// </summary>
+    // 属性元数据
     private sealed class PropertyMetadata
     {
         public IPropertySymbol Symbol { get; set; } = null!;
@@ -955,9 +945,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
         public List<ColumnIndexEntry> ColumnIndexes { get; set; } = new();
     }
 
-    /// <summary>
-    /// MoColumnIndex 条目
-    /// </summary>
+    // MoColumnIndex 条目
     private sealed class ColumnIndexEntry
     {
         public ColumnIndexEntry(string name, bool isUnique)
@@ -970,18 +958,14 @@ public class ModelTableSourceGenerator : ISourceGenerator
         public bool IsUnique { get; }
     }
 
-    /// <summary>
-    /// 索引合并中间条目
-    /// </summary>
+    // 索引合并中间条目
     private sealed class IndexMergeEntry
     {
         public List<string> Columns { get; } = new();
         public bool IsUnique { get; set; }
     }
 
-    /// <summary>
-    /// 最终索引元数据
-    /// </summary>
+    // 最终索引元数据
     private sealed class IndexMetadata
     {
         public IndexMetadata(string name, string[] columns, bool isUnique)

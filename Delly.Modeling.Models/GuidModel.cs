@@ -55,8 +55,7 @@ namespace Delly.Modeling.Models
 #endif
         {
             var result = TryParse(obj);
-            if (result == null)
-                throw new ArgumentException($"Cannot convert {obj?.GetType().Name ?? "null"} to Guid");
+            if (result == null) { throw new ArgumentException($"Cannot convert {obj?.GetType().Name ?? "null"} to Guid"); }
             return result;
         }
 
@@ -71,14 +70,11 @@ namespace Delly.Modeling.Models
         public object? TryParse(object? obj)
 #endif
         {
-            if (obj == null)
-                return null;
+            if (obj == null) { return null; }
 
-            if (obj is Guid value)
-                return value;
+            if (obj is Guid value) { return value; }
 
-            if (obj is string str && Guid.TryParse(str, out var guidVal))
-                return guidVal;
+            if (obj is string str && Guid.TryParse(str, out var guidVal)) { return guidVal; }
 
             return null;
         }

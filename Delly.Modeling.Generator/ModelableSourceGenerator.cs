@@ -9,9 +9,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Delly.Modeling.Generator;
 
-/// <summary>
-/// 构造函数信息
-/// </summary>
+// 构造函数信息
 internal sealed class ConstructorInfo
 {
     public List<ITypeSymbol> ParameterTypes { get; set; } = new();
@@ -36,18 +34,15 @@ public class ModelableSourceGenerator : ISourceGenerator
     /// </summary>
     public void Execute(GeneratorExecutionContext context)
     {
-        if (context.SyntaxReceiver is not ModelableSyntaxReceiver receiver || receiver.Classes.Count == 0)
-            return;
+        if (context.SyntaxReceiver is not ModelableSyntaxReceiver receiver || receiver.Classes.Count == 0) { return; }
 
         foreach (var classDeclaration in receiver.Classes)
         {
-            if (classDeclaration.SyntaxTree.FilePath.Contains("obj/"))
-                continue;
+            if (classDeclaration.SyntaxTree.FilePath.Contains("obj/")) { continue; }
 
             var model = context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree);
             var symbol = model.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
-            if (symbol is null)
-                continue;
+            if (symbol is null) { continue; }
 
             var namespaceSymbol = symbol.ContainingNamespace;
             var namespaceName = namespaceSymbol.IsGlobalNamespace ? "" : namespaceSymbol.ToString();

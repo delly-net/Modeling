@@ -13,6 +13,16 @@ namespace Delly.Modeling
     /// </summary>
     public sealed class DefaultEntityModelFactory : IEntityModelFactory
     {
+        // 基础类型 Type 字段，用于泛型方法匹配
+        private static readonly Type _stringType = typeof(string);
+        private static readonly Type _int32Type = typeof(int);
+        private static readonly Type _int64Type = typeof(long);
+        private static readonly Type _booleanType = typeof(bool);
+        private static readonly Type _doubleType = typeof(double);
+        private static readonly Type _decimalType = typeof(decimal);
+        private static readonly Type _dateTimeType = typeof(DateTime);
+        private static readonly Type _guidType = typeof(Guid);
+
         private readonly Dictionary<string, IEntityModel> _models;
         private readonly List<IEntityModelSet> _modelSets;
         private readonly HashSet<IEntityModelSet> _registeredSets;
@@ -27,6 +37,25 @@ namespace Delly.Modeling
             _registeredSets = new HashSet<IEntityModelSet>();
         }
 
+
+        // 辅助方法：从建模集合中查找
+#if NETSTANDARD2_0
+        private IEntityModel TryGetModelFromModelSets<T>()
+#else
+        private IEntityModel? TryGetModelFromModelSets<T>()
+#endif
+        {
+            foreach (var set in _modelSets)
+            {
+                var model = set.TryGetModel<T>();
+                if (model != null)
+                {
+                    return model;
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// 获取指定类全称的实体模型
         /// </summary>
@@ -38,7 +67,30 @@ namespace Delly.Modeling
         public IEntityModel? GetModel(string fullName)
 #endif
         {
-            return _models.TryGetValue(fullName, out var model) ? model : null;
+            // 优先判断基础类型，直接返回静态实例
+            switch (fullName)
+            {
+                case "":
+                case "System.String":
+                    return StringEntityModel.Instance;
+                case "System.Int32":
+                    return Int32EntityModel.Instance;
+                case "System.Int64":
+                    return Int64EntityModel.Instance;
+                case "System.Boolean":
+                    return BooleanEntityModel.Instance;
+                case "System.Double":
+                    return DoubleEntityModel.Instance;
+                case "System.Decimal":
+                    return DecimalEntityModel.Instance;
+                case "System.DateTime":
+                    return DateTimeEntityModel.Instance;
+                case "System.Guid":
+                    return GuidEntityModel.Instance;
+                default:
+                    // 从字典查找自定义实体模型
+                    return _models.TryGetValue(fullName, out var model) ? model : null;
+            }
         }
 
         /// <summary>
@@ -120,42 +172,102 @@ namespace Delly.Modeling
         /// <summary>
         /// 获取指定类型的实体模型
         /// </summary>
-        /// <typeparam name="T">实体类型</typeparam>
+        /// <typeparam name="T">类型</typeparam>
         /// <returns>指定类型的实体模型</returns>
-        /// <exception cref="System.NotSupportedException">当类型未在任何已注册集合中找到时抛出</exception>
-        public IEntityModel GetModel<T>() where T : class
+        /// <exception cref="System.NotSupportedException">当类型未找到时抛出</exception>
+        public IEntityModel GetModel<T>()
         {
-            foreach (var set in _modelSets)
+            var typeOfT = typeof(T);
+
+            if (typeOfT == _stringType)
             {
-                var model = set.TryGetModel<T>();
-                if (model != null)
-                {
-                    return model;
-                }
+                return StringEntityModel.Instance;
             }
+            if (typeOfT == _int32Type)
+            {
+                return Int32EntityModel.Instance;
+            }
+            if (typeOfT == _int64Type)
+            {
+                return Int64EntityModel.Instance;
+            }
+            if (typeOfT == _booleanType)
+            {
+                return BooleanEntityModel.Instance;
+            }
+            if (typeOfT == _doubleType)
+            {
+                return DoubleEntityModel.Instance;
+            }
+            if (typeOfT == _decimalType)
+            {
+                return DecimalEntityModel.Instance;
+            }
+            if (typeOfT == _dateTimeType)
+            {
+                return DateTimeEntityModel.Instance;
+            }
+            if (typeOfT == _guidType)
+            {
+                return GuidEntityModel.Instance;
+            }
+
+            var result = TryGetModelFromModelSets<T>();
+            if (result != null)
+            {
+                return result;
+            }
+
             throw new NotSupportedException($"类型 {typeof(T).FullName} 未在已注册的建模集合中找到");
         }
 
         /// <summary>
         /// 尝试获取指定类型的实体模型
         /// </summary>
-        /// <typeparam name="T">实体类型</typeparam>
+        /// <typeparam name="T">类型</typeparam>
         /// <returns>指定类型的实体模型，未找到时返回 null</returns>
 #if NETSTANDARD2_0
-        public IEntityModel TryGetModel<T>() where T : class
+        public IEntityModel TryGetModel<T>()
 #else
-        public IEntityModel? TryGetModel<T>() where T : class
+        public IEntityModel? TryGetModel<T>()
 #endif
         {
-            foreach (var set in _modelSets)
+            var typeOfT = typeof(T);
+
+            if (typeOfT == _stringType)
             {
-                var model = set.TryGetModel<T>();
-                if (model != null)
-                {
-                    return model;
-                }
+                return StringEntityModel.Instance;
             }
-            return null;
+            if (typeOfT == _int32Type)
+            {
+                return Int32EntityModel.Instance;
+            }
+            if (typeOfT == _int64Type)
+            {
+                return Int64EntityModel.Instance;
+            }
+            if (typeOfT == _booleanType)
+            {
+                return BooleanEntityModel.Instance;
+            }
+            if (typeOfT == _doubleType)
+            {
+                return DoubleEntityModel.Instance;
+            }
+            if (typeOfT == _decimalType)
+            {
+                return DecimalEntityModel.Instance;
+            }
+            if (typeOfT == _dateTimeType)
+            {
+                return DateTimeEntityModel.Instance;
+            }
+            if (typeOfT == _guidType)
+            {
+                return GuidEntityModel.Instance;
+            }
+
+            return TryGetModelFromModelSets<T>();
         }
     }
 }

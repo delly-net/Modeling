@@ -9,22 +9,22 @@ using System.Text;
 namespace Delly.Modeling.Models
 {
     /// <summary>
-    /// DateTime建模
+    /// Decimal建模
     /// </summary>
-    public sealed class DateTimeModel : IBaseModel
+    public sealed class DecimalModel : IBaseModel
     {
         // 固定静态共享实例
-        private static readonly DateTimeModel _instance = new DateTimeModel();
+        private static readonly DecimalModel _instance = new DecimalModel();
 
         /// <summary>
-        /// DateTime建模 公共实例
+        /// Decimal建模 公共实例
         /// </summary>
-        public static DateTimeModel Instance => _instance;
+        public static DecimalModel Instance => _instance;
 
         /// <summary>
         /// 名称
         /// </summary>
-        public string Name => nameof(DateTime);
+        public string Name => nameof(Decimal);
 
         /// <summary>
         /// 命名空间
@@ -34,20 +34,20 @@ namespace Delly.Modeling.Models
         /// <summary>
         /// 模型类型信息，源生成阶段使用 typeof(T) 赋值
         /// </summary>
-        public Type ClassType => typeof(DateTime);
+        public Type ClassType => typeof(decimal);
 
         /// <summary>
         /// 创建模型类型的新实例
         /// </summary>
         /// <param name="args">构造函数参数数组</param>
         /// <returns>模型类型的新实例</returns>
-        public object CreateInstance(params object[] args) => args == null || args.Length == 0 ? default : Convert.ToDateTime(args[0]);
+        public object CreateInstance(params object[] args) => args == null || args.Length == 0 ? 0m : Convert.ToDecimal(args[0]);
 
         /// <summary>
-        /// 将输入对象解析为 DateTime 实例
+        /// 将输入对象解析为 Decimal 实例
         /// </summary>
         /// <param name="obj">输入对象</param>
-        /// <returns>DateTime 实例</returns>
+        /// <returns>Decimal 实例</returns>
 #if NETSTANDARD2_0
         public object Parse(object obj)
 #else
@@ -55,15 +55,15 @@ namespace Delly.Modeling.Models
 #endif
         {
             var result = TryParse(obj);
-            if (result == null) { throw new ArgumentException($"Cannot convert {obj?.GetType().Name ?? "null"} to DateTime"); }
+            if (result == null) { throw new ArgumentException($"Cannot convert {obj?.GetType().Name ?? "null"} to Decimal"); }
             return result;
         }
 
         /// <summary>
-        /// 尝试将输入对象解析为 DateTime 实例
+        /// 尝试将输入对象解析为 Decimal 实例
         /// </summary>
         /// <param name="obj">输入对象</param>
-        /// <returns>DateTime 实例，解析失败时返回 null</returns>
+        /// <returns>Decimal 实例，解析失败时返回 null</returns>
 #if NETSTANDARD2_0
         public object TryParse(object obj)
 #else
@@ -72,13 +72,18 @@ namespace Delly.Modeling.Models
         {
             if (obj == null) { return null; }
 
-            if (obj is DateTime value) { return value; }
+            if (obj is decimal value) { return value; }
 
-            if (obj is string str && DateTime.TryParse(str, out var dateTimeVal)) { return dateTimeVal; }
+            if (obj is string str && decimal.TryParse(str, out var decimalVal)) { return decimalVal; }
 
-            if (obj is long ticks) { return new DateTime(ticks); }
+            if (obj is double doubleVal) { return (decimal)doubleVal; }
 
             return null;
         }
+
+        /// <summary>
+        /// 是否为值类型对象
+        /// </summary>
+        public bool IsValue => true;
     }
 }

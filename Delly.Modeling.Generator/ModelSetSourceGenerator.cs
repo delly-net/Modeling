@@ -29,23 +29,19 @@ public class ModelSetSourceGenerator : ISourceGenerator
     /// </summary>
     public void Execute(GeneratorExecutionContext context)
     {
-        if (context.SyntaxReceiver is not ModelSetSyntaxReceiver receiver)
-            return;
+        if (context.SyntaxReceiver is not ModelSetSyntaxReceiver receiver) { return; }
 
-        if (receiver.MoSetClasses.Count == 0)
-            return;
+        if (receiver.MoSetClasses.Count == 0) { return; }
 
         // 获取同一程序集中所有标记了 MoTable 或 MoQuery 的类
         var modelClassInfos = new List<ModelClassInfo>();
         foreach (var classDeclaration in receiver.ModelClasses)
         {
-            if (classDeclaration.SyntaxTree.FilePath.Contains("obj/"))
-                continue;
+            if (classDeclaration.SyntaxTree.FilePath.Contains("obj/")) { continue; }
 
             var model = context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree);
             var symbol = model.GetDeclaredSymbol(classDeclaration) as INamedTypeSymbol;
-            if (symbol is null)
-                continue;
+            if (symbol is null) { continue; }
 
             var namespaceSymbol = symbol.ContainingNamespace;
             var namespaceName = namespaceSymbol.IsGlobalNamespace ? "" : namespaceSymbol.ToString();
@@ -60,13 +56,11 @@ public class ModelSetSourceGenerator : ISourceGenerator
 
         foreach (var moSetClass in receiver.MoSetClasses)
         {
-            if (moSetClass.SyntaxTree.FilePath.Contains("obj/"))
-                continue;
+            if (moSetClass.SyntaxTree.FilePath.Contains("obj/")) { continue; }
 
             var model = context.Compilation.GetSemanticModel(moSetClass.SyntaxTree);
             var symbol = model.GetDeclaredSymbol(moSetClass) as INamedTypeSymbol;
-            if (symbol is null)
-                continue;
+            if (symbol is null) { continue; }
 
             var namespaceSymbol = symbol.ContainingNamespace;
             var namespaceName = namespaceSymbol.IsGlobalNamespace ? "" : namespaceSymbol.ToString();
@@ -153,20 +147,19 @@ public class ModelSetSourceGenerator : ISourceGenerator
         sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 获取指定类型的模型");
         sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    /// <typeparam name=\"T\">模型类型</typeparam>");
+        sb.AppendLine("    /// <typeparam name=\"T\">类型</typeparam>");
         sb.AppendLine("    /// <returns>指定类型的模型</returns>");
         sb.AppendLine("    /// <exception cref=\"System.NotSupportedException\">当类型不匹配时抛出</exception>");
-        sb.AppendLine("    public IEntityModel GetModel<T>() where T : class");
+        sb.AppendLine("    public IEntityModel GetModel<T>()");
         sb.AppendLine("    {");
-        sb.AppendLine("        return typeof(T) switch");
-        sb.AppendLine("        {");
+        sb.AppendLine("        var typeOfT = typeof(T);");
         foreach (var modelInfo in modelClasses)
         {
             var fieldName = GetFieldName(modelInfo.ClassName);
-            sb.AppendLine($"            var t when t == _{fieldName} => {modelInfo.ClassName}.GetEntityModel(),");
+            sb.AppendLine($"        if (typeOfT == _{fieldName})");
+            sb.AppendLine($"            return {modelInfo.ClassName}.GetEntityModel();");
         }
-        sb.AppendLine("            _ => throw new System.NotSupportedException($\"不支持的模型类型: {typeof(T).FullName}\")");
-        sb.AppendLine("        };");
+        sb.AppendLine("        throw new System.NotSupportedException($\"不支持的模型类型: {typeof(T).FullName}\");");
         sb.AppendLine("    }");
         sb.AppendLine();
 
@@ -174,32 +167,29 @@ public class ModelSetSourceGenerator : ISourceGenerator
         sb.AppendLine("    /// <summary>");
         sb.AppendLine("    /// 尝试获取指定类型的模型");
         sb.AppendLine("    /// </summary>");
-        sb.AppendLine("    /// <typeparam name=\"T\">模型类型</typeparam>");
+        sb.AppendLine("    /// <typeparam name=\"T\">类型</typeparam>");
         sb.AppendLine("    /// <returns>模型对象，未找到时返回 null</returns>");
         sb.AppendLine("#if !NETSTANDARD2_0");
-        sb.AppendLine("    public IEntityModel? TryGetModel<T>() where T : class");
+        sb.AppendLine("    public IEntityModel? TryGetModel<T>()");
         sb.AppendLine("#else");
-        sb.AppendLine("    public IEntityModel TryGetModel<T>() where T : class");
+        sb.AppendLine("    public IEntityModel TryGetModel<T>()");
         sb.AppendLine("#endif");
         sb.AppendLine("    {");
-        sb.AppendLine("        return typeof(T) switch");
-        sb.AppendLine("        {");
+        sb.AppendLine("        var typeOfT = typeof(T);");
         foreach (var modelInfo in modelClasses)
         {
             var fieldName = GetFieldName(modelInfo.ClassName);
-            sb.AppendLine($"            var t when t == _{fieldName} => {modelInfo.ClassName}.GetEntityModel(),");
+            sb.AppendLine($"        if (typeOfT == _{fieldName})");
+            sb.AppendLine($"            return {modelInfo.ClassName}.GetEntityModel();");
         }
-        sb.AppendLine("            _ => null");
-        sb.AppendLine("        };");
+        sb.AppendLine("        return null;");
         sb.AppendLine("    }");
         sb.AppendLine("}");
 
         return sb.ToString();
     }
 
-    /// <summary>
-    /// 获取类名对应的字段名（将类名转为小写开头）
-    /// </summary>
+    // 获取类名对应的字段名（将类名转为小写开头）
     private static string GetFieldName(string className)
     {
         if (string.IsNullOrEmpty(className))
@@ -208,9 +198,7 @@ public class ModelSetSourceGenerator : ISourceGenerator
         return char.ToLower(className[0]) + className.Substring(1);
     }
 
-    /// <summary>
-    /// 模型类信息
-    /// </summary>
+    // 模型类信息
     private sealed class ModelClassInfo
     {
         public string Namespace { get; set; } = string.Empty;

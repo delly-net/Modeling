@@ -26,6 +26,9 @@ createInstanceDemo.Run();
 var isValueDemo = new IsValueDemo();
 isValueDemo.Run();
 
+var baseTypeModelDemo = new BaseTypeModelDemo();
+baseTypeModelDemo.Run();
+
 // ============================================
 // 建模集合类定义
 // ============================================
