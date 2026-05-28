@@ -1,7 +1,3 @@
-#if !NETSTANDARD2_0
-#nullable enable
-#endif
-
 namespace Delly.Modeling
 {
     /// <summary>

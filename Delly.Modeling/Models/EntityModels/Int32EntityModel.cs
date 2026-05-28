@@ -1,7 +1,3 @@
-#if !NETSTANDARD2_0
-#nullable enable
-#endif
-
 using System;
 using Delly.Modeling.Models;
 

@@ -111,12 +111,16 @@ Generated methods include:
 ### Nullable Annotations
 
 - Use `object?` for nullable object parameters in interfaces and public APIs
+- Configure nullable reference types at project level in `*.csproj` using `<Nullable>enable</Nullable>`
+- For multi-target framework projects, use MSBuild Condition to enable nullable only for supported frameworks:
+  ```xml
+  <!-- Only enable Nullable for supported frameworks -->
+  <PropertyGroup Condition="'$(TargetFramework)'!='netstandard2.0'">
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  ```
 - For `Models/*.cs` files, use conditional compilation to support both .NET Standard 2.0 and modern .NET:
   ```csharp
-  #if !NETSTANDARD2_0
-  #nullable enable
-  #endif
-
   #if !NETSTANDARD2_0
   public object? TryParse(object? obj)
   #else
@@ -126,6 +130,9 @@ Generated methods include:
       // Implementation
   }
   ```
+- Source generator code templates should retain `#nullable enable` directives for generated code
+- **Note**: Do not use `#nullable enable` directives in source code files; configure at project level instead
+- **Note**: Pure .NET Standard 2.0 projects (like Delly.Modeling.Generator) don't need `<Nullable>enable</Nullable>` configuration
 
 ### Naming Conventions
 

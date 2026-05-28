@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -693,13 +691,13 @@ public class ModelTableSourceGenerator : ISourceGenerator
     /// <summary>
     /// 读取 [MoTable] 特性的表名
     /// </summary>
-    private static string? GetTableName(INamedTypeSymbol symbol)
+    private static string GetTableName(INamedTypeSymbol symbol)
     {
         var attr = symbol.GetAttributes().FirstOrDefault(a =>
             a.AttributeClass?.Name == "MoTableAttribute");
-        if (attr == null) { return null; }
+        if (attr == null) { return string.Empty; }
         var nameArg = attr.ConstructorArguments.FirstOrDefault();
-        return nameArg.Value?.ToString();
+        return nameArg.Value?.ToString() ?? string.Empty;
     }
 
     /// <summary>
@@ -805,7 +803,7 @@ public class ModelTableSourceGenerator : ISourceGenerator
     /// 读取属性元数据（检查 [MoColumn]、[MoColumnIndex] 特性）
     /// 返回 null 表示该属性不参与源生成（MoTable 无 [MoColumn]）
     /// </summary>
-    private static PropertyMetadata? GetPropertyMetadata(IPropertySymbol property, bool isQuery)
+    private static PropertyMetadata GetPropertyMetadata(IPropertySymbol property, bool isQuery)
     {
         if (isQuery)
         {
@@ -934,8 +932,8 @@ public class ModelTableSourceGenerator : ISourceGenerator
     // 属性元数据
     private sealed class PropertyMetadata
     {
-        public IPropertySymbol Symbol { get; set; } = null!;
-        public string? ColumnName { get; set; }
+        public IPropertySymbol Symbol { get; set; }
+        public string ColumnName { get; set; }
         public bool IsPrimaryKey { get; set; }
         public bool IsAutoIncrement { get; set; }
         public int Type { get; set; }

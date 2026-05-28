@@ -11,8 +11,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Delly.Modeling" Version="2026.5.2" />
-		<PackageReference Include="Delly.Modeling.Generator" Version="2026.5.2" />
+		<PackageReference Include="Delly.Modeling" Version="2026.5.19" />
+		<PackageReference Include="Delly.Modeling.Generator" Version="2026.5.19" />
 	</ItemGroup>
 
 </Project>
