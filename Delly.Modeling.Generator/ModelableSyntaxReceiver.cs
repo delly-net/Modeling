@@ -1,3 +1,7 @@
+#if !NETSTANDARD2_0
+#nullable enable
+#endif
+
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

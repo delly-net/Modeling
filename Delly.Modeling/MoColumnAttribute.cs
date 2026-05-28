@@ -10,7 +10,7 @@ namespace Delly.Modeling
     public class MoColumnAttribute : ColumnAttribute
     {
         /// <summary>
-        /// 模型化列特性
+        /// 初始化模型化列特性实例
         /// </summary>
         public MoColumnAttribute()
         {
@@ -18,9 +18,9 @@ namespace Delly.Modeling
         }
 
         /// <summary>
-        /// 模型化列特性
+        /// 初始化模型化列特性实例
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">列名称</param>
         public MoColumnAttribute(string name) : base(name)
         {
 

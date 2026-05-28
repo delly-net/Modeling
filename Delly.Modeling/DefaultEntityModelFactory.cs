@@ -48,10 +48,7 @@ namespace Delly.Modeling
             foreach (var set in _modelSets)
             {
                 var model = set.TryGetModel<T>();
-                if (model != null)
-                {
-                    return model;
-                }
+                if (model != null) { return model; }
             }
             return null;
         }
@@ -179,44 +176,17 @@ namespace Delly.Modeling
         {
             var typeOfT = typeof(T);
 
-            if (typeOfT == _stringType)
-            {
-                return StringEntityModel.Instance;
-            }
-            if (typeOfT == _int32Type)
-            {
-                return Int32EntityModel.Instance;
-            }
-            if (typeOfT == _int64Type)
-            {
-                return Int64EntityModel.Instance;
-            }
-            if (typeOfT == _booleanType)
-            {
-                return BooleanEntityModel.Instance;
-            }
-            if (typeOfT == _doubleType)
-            {
-                return DoubleEntityModel.Instance;
-            }
-            if (typeOfT == _decimalType)
-            {
-                return DecimalEntityModel.Instance;
-            }
-            if (typeOfT == _dateTimeType)
-            {
-                return DateTimeEntityModel.Instance;
-            }
-            if (typeOfT == _guidType)
-            {
-                return GuidEntityModel.Instance;
-            }
+            if (typeOfT == _stringType) { return StringEntityModel.Instance; }
+            if (typeOfT == _int32Type) { return Int32EntityModel.Instance; }
+            if (typeOfT == _int64Type) { return Int64EntityModel.Instance; }
+            if (typeOfT == _booleanType) { return BooleanEntityModel.Instance; }
+            if (typeOfT == _doubleType) { return DoubleEntityModel.Instance; }
+            if (typeOfT == _decimalType) { return DecimalEntityModel.Instance; }
+            if (typeOfT == _dateTimeType) { return DateTimeEntityModel.Instance; }
+            if (typeOfT == _guidType) { return GuidEntityModel.Instance; }
 
             var result = TryGetModelFromModelSets<T>();
-            if (result != null)
-            {
-                return result;
-            }
+            if (result != null) { return result; }
 
             throw new NotSupportedException($"类型 {typeof(T).FullName} 未在已注册的建模集合中找到");
         }
@@ -234,38 +204,14 @@ namespace Delly.Modeling
         {
             var typeOfT = typeof(T);
 
-            if (typeOfT == _stringType)
-            {
-                return StringEntityModel.Instance;
-            }
-            if (typeOfT == _int32Type)
-            {
-                return Int32EntityModel.Instance;
-            }
-            if (typeOfT == _int64Type)
-            {
-                return Int64EntityModel.Instance;
-            }
-            if (typeOfT == _booleanType)
-            {
-                return BooleanEntityModel.Instance;
-            }
-            if (typeOfT == _doubleType)
-            {
-                return DoubleEntityModel.Instance;
-            }
-            if (typeOfT == _decimalType)
-            {
-                return DecimalEntityModel.Instance;
-            }
-            if (typeOfT == _dateTimeType)
-            {
-                return DateTimeEntityModel.Instance;
-            }
-            if (typeOfT == _guidType)
-            {
-                return GuidEntityModel.Instance;
-            }
+            if (typeOfT == _stringType) { return StringEntityModel.Instance; }
+            if (typeOfT == _int32Type) { return Int32EntityModel.Instance; }
+            if (typeOfT == _int64Type) { return Int64EntityModel.Instance; }
+            if (typeOfT == _booleanType) { return BooleanEntityModel.Instance; }
+            if (typeOfT == _doubleType) { return DoubleEntityModel.Instance; }
+            if (typeOfT == _decimalType) { return DecimalEntityModel.Instance; }
+            if (typeOfT == _dateTimeType) { return DateTimeEntityModel.Instance; }
+            if (typeOfT == _guidType) { return GuidEntityModel.Instance; }
 
             return TryGetModelFromModelSets<T>();
         }

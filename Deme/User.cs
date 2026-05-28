@@ -53,10 +53,14 @@ public class UserParser : Delly.Modeling.IParsable<User>
     public object? TryParse(object? obj)
     {
         if (obj == null)
+        {
             return null;
+        }
 
         if (obj is User user)
+        {
             return user;
+        }
 
         if (obj is string str && Guid.TryParse(str, out var guid))
             return new User(guid.ToString("N"));

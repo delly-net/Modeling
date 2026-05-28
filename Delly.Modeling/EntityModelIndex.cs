@@ -10,8 +10,11 @@ namespace Delly.Modeling
     public sealed class EntityModelIndex
     {
         /// <summary>
-        /// 实体建模索引
+        /// 初始化实体建模索引实例
         /// </summary>
+        /// <param name="name">索引名称</param>
+        /// <param name="columns">字段集合</param>
+        /// <param name="isUnique">是否唯一索引</param>
         public EntityModelIndex(string name, string[] columns, bool isUnique)
         {
             Name = name;

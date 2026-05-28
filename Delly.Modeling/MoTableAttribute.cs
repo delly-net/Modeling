@@ -10,9 +10,9 @@ namespace Delly.Modeling
     public class MoTableAttribute : TableAttribute
     {
         /// <summary>
-        /// 模型化表特性
+        /// 初始化模型化表特性实例
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">表名称</param>
         public MoTableAttribute(string name) : base(name)
         {
 
