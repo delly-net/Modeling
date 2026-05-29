@@ -60,5 +60,33 @@ namespace Delly.Modeling
         /// </summary>
         bool IsValue { get; }
 
+        /// <summary>
+        /// 是否为泛型模型
+        /// </summary>
+        /// <remarks>
+        /// 对于开放泛型定义（如 List&lt;&gt;）返回 true
+        /// 对于已构造泛型（如 List&lt;int&gt;）返回 true
+        /// 对于非泛型类型（如 int、string）返回 false
+        /// </remarks>
+        bool IsGenericModel { get; }
+
+        /// <summary>
+        /// 是否为开放泛型定义
+        /// </summary>
+        /// <remarks>
+        /// 对于开放泛型定义（如 List&lt;&gt;、Dictionary&lt;,&gt;）返回 true
+        /// 对于已构造泛型和非泛型类型返回 false
+        /// </remarks>
+        bool IsGenericDefinition { get; }
+
+        /// <summary>
+        /// 泛型定义数量
+        /// </summary>
+        /// <remarks>
+        /// List&lt;&gt; 返回 1，Dictionary&lt;,&gt; 返回 2
+        /// 非泛型类型返回 0
+        /// </remarks>
+        int GenericDefinitionCount { get; }
+
     }
 }

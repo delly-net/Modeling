@@ -7,7 +7,7 @@ namespace Delly.Modeling.Models
     /// <summary>
     /// Boolean建模
     /// </summary>
-    public sealed class BooleanModel : IBaseModel
+    public sealed class BooleanModel : IModel
     {
         // 固定静态共享实例
         private static readonly BooleanModel _instance = new BooleanModel();
@@ -83,5 +83,72 @@ namespace Delly.Modeling.Models
         /// 是否为值类型对象
         /// </summary>
         public bool IsValue => true;
+
+        /// <summary>
+        /// 是否为泛型模型
+        /// </summary>
+        public bool IsGenericModel => false;
+
+        /// <summary>
+        /// 是否为开放泛型定义
+        /// </summary>
+        public bool IsGenericDefinition => false;
+
+        /// <summary>
+        /// 泛型定义数量
+        /// </summary>
+        public int GenericDefinitionCount => 0;
+
+        /// <summary>
+        /// 获取所有建模属性
+        /// </summary>
+        /// <returns>属性对象数组</returns>
+        public IModelProperty[] GetProperties()
+        {
+            return Array.Empty<IModelProperty>();
+        }
+
+        /// <summary>
+        /// 获取建模属性
+        /// </summary>
+        /// <param name="name">属性名称</param>
+        /// <returns>属性对象</returns>
+#if NETSTANDARD2_0
+        public IModelProperty GetProperty(string name)
+#else
+        public IModelProperty? GetProperty(string name)
+#endif
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// 获取泛型模型的定义模型
+        /// </summary>
+        /// <returns>自身</returns>
+        public IModel GetGenericModelDefinition()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// 获取所有已构造的泛型模型
+        /// </summary>
+        /// <returns>空列表</returns>
+        public IReadOnlyList<IModel> GetGenericModels()
+        {
+            return Array.Empty<IModel>();
+        }
+
+        /// <summary>
+        /// 根据泛型参数创建已构造的泛型模型
+        /// </summary>
+        /// <param name="models">泛型参数对应的模型列表</param>
+        /// <returns>已构造的泛型模型</returns>
+        /// <exception cref="NotSupportedException">BooleanModel 不支持泛型建模创建</exception>
+        public IModel MakeGenericModel(params IModel[] models)
+        {
+            throw new NotSupportedException("BooleanModel 不支持泛型建模创建");
+        }
     }
 }

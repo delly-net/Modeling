@@ -42,6 +42,21 @@ namespace Delly.Modeling
         public bool IsValue => _baseModel.IsValue;
 
         /// <summary>
+        /// 是否为泛型模型
+        /// </summary>
+        public bool IsGenericModel => _baseModel.IsGenericModel;
+
+        /// <summary>
+        /// 是否为开放泛型定义
+        /// </summary>
+        public bool IsGenericDefinition => _baseModel.IsGenericDefinition;
+
+        /// <summary>
+        /// 泛型定义数量
+        /// </summary>
+        public int GenericDefinitionCount => _baseModel.GenericDefinitionCount;
+
+        /// <summary>
         /// 创建模型类型的新实例
         /// </summary>
         /// <param name="args">构造函数参数数组</param>

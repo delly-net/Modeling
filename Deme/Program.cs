@@ -1,6 +1,13 @@
 using Delly.Modeling;
 using Demo;
 
+var typeList = typeof(List<>);
+Console.WriteLine(typeList.FullName);
+var typeIntList = typeList.MakeGenericType(typeof(int));
+Console.WriteLine(typeIntList.FullName);
+var intList = (List<int>)Activator.CreateInstance(typeIntList)!;
+Console.WriteLine(intList.Count);
+
 // ============================================
 // 功能演示
 // ============================================
