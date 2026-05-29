@@ -5,6 +5,10 @@ var typeList = typeof(List<>);
 Console.WriteLine(typeList.FullName);
 var typeIntList = typeList.MakeGenericType(typeof(int));
 Console.WriteLine(typeIntList.FullName);
+foreach (var type in typeIntList.GenericTypeArguments)
+{
+    Console.WriteLine(typeIntList.Name + ":" + type.Name);
+}
 var intList = (List<int>)Activator.CreateInstance(typeIntList)!;
 Console.WriteLine(intList.Count);
 

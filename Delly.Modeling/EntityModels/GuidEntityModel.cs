@@ -1,20 +1,21 @@
 using System;
+using System.Collections.Generic;
 using Delly.Modeling.Models;
 
-namespace Delly.Modeling
+namespace Delly.Modeling.EntityModels
 {
     /// <summary>
-    /// DateTime 实体建模适配器
+    /// Guid 实体建模适配器
     /// </summary>
-    public sealed class DateTimeEntityModel : IEntityModel
+    public sealed class GuidEntityModel : IEntityModel
     {
-        private static readonly DateTimeEntityModel _instance = new DateTimeEntityModel();
-        private readonly IBaseModel _baseModel = DateTimeModel.Instance;
+        private static readonly GuidEntityModel _instance = new GuidEntityModel();
+        private readonly IBaseModel _baseModel = GuidModel.Instance;
 
         /// <summary>
-        /// 获取 DateTime 实体建模单例实例
+        /// 获取 Guid 实体建模单例实例
         /// </summary>
-        public static DateTimeEntityModel Instance => _instance;
+        public static GuidEntityModel Instance => _instance;
 
         /// <summary>
         /// 名称
@@ -29,7 +30,7 @@ namespace Delly.Modeling
         /// <summary>
         /// 类名
         /// </summary>
-        public string ClassName => "DateTime";
+        public string ClassName => "Guid";
 
         /// <summary>
         /// 模型类型信息
@@ -107,5 +108,34 @@ namespace Delly.Modeling
 #else
         public IEntityModelProperty? GetProperty(string name) => null;
 #endif
+
+        /// <summary>
+        /// 获取泛型实体模型的定义模型
+        /// </summary>
+        /// <returns>自身</returns>
+        public IEntityModel GetGenericModelDefinition()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// 获取所有已构造的泛型实体模型
+        /// </summary>
+        /// <returns>空列表</returns>
+        public IReadOnlyList<IEntityModel> GetGenericModels()
+        {
+            return Array.Empty<IEntityModel>();
+        }
+
+        /// <summary>
+        /// 根据泛型参数创建已构造的泛型实体模型
+        /// </summary>
+        /// <param name="models">泛型参数对应的模型列表</param>
+        /// <returns>已构造的泛型实体模型</returns>
+        /// <exception cref="NotSupportedException">Guid 不支持泛型实体建模创建</exception>
+        public IEntityModel MakeGenericModel(params IEntityModel[] models)
+        {
+            throw new NotSupportedException("Guid 不支持泛型实体建模创建");
+        }
     }
 }

@@ -36,5 +36,24 @@ namespace Delly.Modeling
 #else
         IEntityModelProperty? GetProperty(string name);
 #endif
+
+        /// <summary>
+        /// 获取泛型实体模型的定义模型
+        /// </summary>
+        /// <returns>泛型实体定义模型，对于非泛型实体模型返回自身</returns>
+        IEntityModel GetGenericModelDefinition();
+
+        /// <summary>
+        /// 获取所有已构造的泛型实体模型
+        /// </summary>
+        /// <returns>已构造的泛型实体模型列表</returns>
+        IReadOnlyList<IEntityModel> GetGenericModels();
+
+        /// <summary>
+        /// 根据泛型参数创建已构造的泛型实体模型
+        /// </summary>
+        /// <param name="models">泛型参数对应的模型列表</param>
+        /// <returns>已构造的泛型实体模型</returns>
+        IEntityModel MakeGenericModel(params IEntityModel[] models);
     }
 }

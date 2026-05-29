@@ -569,6 +569,36 @@ public class ModelTableSourceGenerator : ISourceGenerator
             sb.AppendLine("#endif");
         }
 
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 获取泛型实体模型的定义模型");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <returns>自身</returns>");
+        sb.AppendLine("    public IEntityModel GetGenericModelDefinition()");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return this;");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 获取所有已构造的泛型实体模型");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <returns>空列表</returns>");
+        sb.AppendLine("    public IReadOnlyList<IEntityModel> GetGenericModels()");
+        sb.AppendLine("    {");
+        sb.AppendLine("        return Array.Empty<IEntityModel>();");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        sb.AppendLine("    /// <summary>");
+        sb.AppendLine("    /// 根据泛型参数创建已构造的泛型实体模型");
+        sb.AppendLine("    /// </summary>");
+        sb.AppendLine("    /// <param name=\"models\">泛型参数对应的模型列表</param>");
+        sb.AppendLine("    /// <returns>已构造的泛型实体模型</returns>");
+        sb.AppendLine($"    /// <exception cref=\"NotSupportedException\">{className} 不支持泛型实体建模创建</exception>");
+        sb.AppendLine("    public IEntityModel MakeGenericModel(params IEntityModel[] models)");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        throw new NotSupportedException(\"{className} 不支持泛型实体建模创建\");");
+        sb.AppendLine("    }");
+
         sb.AppendLine("}");
 
         return sb.ToString();

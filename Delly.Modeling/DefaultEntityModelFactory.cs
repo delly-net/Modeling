@@ -1,3 +1,4 @@
+using Delly.Modeling.EntityModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -181,6 +182,39 @@ namespace Delly.Modeling
             if (typeOfT == _dateTimeType) { return DateTimeEntityModel.Instance; }
             if (typeOfT == _guidType) { return GuidEntityModel.Instance; }
 
+            // 判断是否为泛型类型
+            if (typeOfT.IsGenericType)
+            {
+                // 获取开放泛型定义类型
+                var genericDefinition = typeOfT.GetGenericTypeDefinition();
+
+                // 根据开放泛型定义类型名称获取对应的泛型定义模型
+                IEntityModel definitionModel;
+                switch (genericDefinition.Name)
+                {
+                    case "List`1":
+                        definitionModel = ListEntityModel.Instance;
+                        break;
+                    case "Dictionary`2":
+                        definitionModel = DictionaryEntityModel.Instance;
+                        break;
+                    default:
+                        throw new NotSupportedException($"不支持的泛型类型: {genericDefinition.Name}");
+                }
+
+                // 获取泛型参数类型对应的模型
+                var genericArguments = typeOfT.GetGenericArguments();
+                var argumentModels = new IEntityModel[genericArguments.Length];
+
+                for (int i = 0; i < genericArguments.Length; i++)
+                {
+                    argumentModels[i] = GetModelByType(genericArguments[i]);
+                }
+
+                // 通过泛型定义模型创建已构造的泛型实体模型
+                return definitionModel.MakeGenericModel(argumentModels);
+            }
+
             var result = TryGetModelFromModelSets<T>();
             if (result != null) { return result; }
 
@@ -210,6 +244,37 @@ namespace Delly.Modeling
             if (typeOfT == _guidType) { return GuidEntityModel.Instance; }
 
             return TryGetModelFromModelSets<T>();
+        }
+
+        /// <summary>
+        /// 根据类型获取实体模型
+        /// </summary>
+        /// <param name="type">类型对象</param>
+        /// <returns>实体模型对象</returns>
+        private IEntityModel GetModelByType(Type type)
+        {
+            // 根据基础类型返回对应的实体模型
+            switch (type.Name)
+            {
+                case nameof(String):
+                    return StringEntityModel.Instance;
+                case nameof(Int32):
+                    return Int32EntityModel.Instance;
+                case nameof(Int64):
+                    return Int64EntityModel.Instance;
+                case nameof(Boolean):
+                    return BooleanEntityModel.Instance;
+                case nameof(Double):
+                    return DoubleEntityModel.Instance;
+                case nameof(Decimal):
+                    return DecimalEntityModel.Instance;
+                case nameof(DateTime):
+                    return DateTimeEntityModel.Instance;
+                case nameof(Guid):
+                    return GuidEntityModel.Instance;
+                default:
+                    throw new NotSupportedException($"不支持的类型: {type.Name}");
+            }
         }
     }
 }
